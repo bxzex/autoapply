@@ -30,19 +30,21 @@ export function cosineSimilarity(vecA: number[], vecB: number[]) {
 }
 
 export async function extractSkills(text: string) {
-  // Simple heuristic for now - a real implementation would use a specialized model
-  // We can use a small NER or just extract nouns/keywords
   const commonSkills = [
     'React', 'TypeScript', 'JavaScript', 'Python', 'Node.js', 'Express',
     'PostgreSQL', 'MongoDB', 'Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure',
     'Rust', 'Go', 'Java', 'C++', 'Swift', 'Kotlin', 'Tailwind', 'CSS', 'HTML'
   ];
   
-  const skills = commonSkills.filter(skill => {
-    // Escape special characters like ++ in C++
-    const escapedSkill = skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return new RegExp(`\\b${escapedSkill}\\b`, 'i').test(text);
+  // Use a simpler search that doesn't trigger "nothing to repeat" errors
+  const lowerText = text.toLowerCase();
+  return commonSkills.filter(skill => {
+    const s = skill.toLowerCase();
+    // Check for exact word or handle special cases like C++
+    if (s.includes('+') || s.includes('.')) {
+      return lowerText.includes(s);
+    }
+    const regex = new RegExp(`\\b${s}\\b`, 'i');
+    return regex.test(lowerText);
   });
-  
-  return skills;
 }
