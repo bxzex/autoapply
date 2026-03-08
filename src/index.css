@@ -3,30 +3,50 @@
 @tailwind utilities;
 
 @layer components {
-  .nav-btn {
-    @apply w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 text-slate-400 font-bold text-xs uppercase tracking-[0.2em] border border-transparent;
+  .tab-trigger {
+    @apply flex items-center gap-2 px-4 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-widest text-[#666] transition-all hover:text-[#ededed];
   }
   
-  .nav-btn:hover {
-    @apply bg-white/[0.03] text-white border-white/5;
+  .tab-trigger.active {
+    @apply text-[#ededed] bg-[#161616] border border-[#1f1f1f];
   }
-  
-  .nav-btn.active {
-    @apply bg-blue-600 text-white shadow-xl shadow-blue-500/20 border-blue-500/20;
+
+  .action-btn-primary {
+    @apply h-10 px-6 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-sm hover:bg-[#ededed] transition-colors whitespace-nowrap;
+  }
+
+  .action-btn-secondary {
+    @apply h-10 px-6 border border-[#1f1f1f] text-[#ededed] text-[10px] font-black uppercase tracking-widest rounded-sm hover:bg-white/5 transition-colors whitespace-nowrap;
   }
 }
 
 :root {
-  font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif;
-  background-color: #020617;
-  color: #f8fafc;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #050505;
+  color: #ededed;
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 #root {
   width: 100%;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+::-webkit-scrollbar-thumb {
+  background: #1f1f1f;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #333;
 }
