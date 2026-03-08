@@ -190,50 +190,102 @@ function ListingsSection({ profile }: { profile: UserProfile | null }) {
     try {
       const queryEmbedding = await getEmbedding(query);
       
-      // Source 1: Adzuna
-      const adzunaUrl = `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=45759795&app_key=943e061849f50e8081f9a1240e340c23&what=${encodeURIComponent(query)}&where=${encodeURIComponent(location)}&results_per_page=15&content-type=application/json`;
-      
-      // Source 2: Techmap (JobDataFeeds)
-      const techmapUrl = `https://jobdatafeeds.com/job-api/job-postings/search?job_title=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`;
-
-      const [resAdzuna, resTechmap] = await Promise.all([
-        fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(adzunaUrl)}`).catch(() => null),
-        fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(techmapUrl)}`).catch(() => null)
-      ]);
-      
-      let combinedJobs = [];
-
-      if (resAdzuna && resAdzuna.ok) {
-        const d = await resAdzuna.json();
-        const mapped = d.results.map((j: any) => ({
-          id: `adz-${j.id}`,
-          title: j.title.replace(/<\/?[^>]+(>|$)/g, ""),
-          company: j.company.display_name,
-          location: j.location.display_name,
-          salary: j.salary_min ? `$${Math.round(j.salary_min).toLocaleString()}` : "Market Rate",
-          description: j.description.replace(/<\/?[^>]+(>|$)/g, ""),
-          url: j.redirect_url,
-          source: "ADZUNA_GLOBAL"
-        }));
-        combinedJobs.push(...mapped);
-      }
-
-      if (resTechmap && resTechmap.ok) {
-        const d = await resTechmap.json();
-        if (Array.isArray(d)) {
-          const mapped = d.map((j: any, index: number) => ({
-            id: `tm-${index}-${Date.now()}`,
-            title: j.job_title,
-            company: j.company,
-            location: j.location,
-            salary: j.salary || "Market Rate",
-            description: j.job_description || j.qualifications || "",
-            url: "#",
-            source: "TECHMAP_DIRECT"
-          }));
-          combinedJobs.push(...mapped);
+      const sources = [
+        // Source 1: Adzuna
+        {
+          name: 'ADZUNA_GLOBAL',
+          url: `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=45759795&app_key=943e061849f50e8081f9a1240e340c23&what=${encodeURIComponent(query)}&where=${encodeURIComponent(location)}&results_per_page=10&content-type=application/json`,
+          proxy: true
+        },
+        // Source 2: Techmap
+        {
+          name: 'TECHMAP_DIRECT',
+          url: `https://jobdatafeeds.com/job-api/job-postings/search?job_title=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`,
+          proxy: true
+        },
+        // Source 3: Fantastic.jobs
+        {
+          name: 'FANTASTIC_JOBS',
+          url: `https://fantastic.jobs/api/jobs/search?keywords=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`,
+          proxy: false // Supports CORS
+        },
+        // Source 4: Jobicy (RSS)
+        {
+          name: 'JOBICY_REMOTE',
+          url: `https://jobicy.com/jobs-rss-feed?query=${encodeURIComponent(query)}`,
+          proxy: true,
+          type: 'xml'
         }
-      }
+      ];
+
+      const fetchResults = await Promise.all(sources.map(async (s) => {
+        try {
+          const finalUrl = s.proxy ? `https://api.allorigins.win/raw?url=${encodeURIComponent(s.url)}` : s.url;
+          const res = await fetch(finalUrl);
+          if (!res.ok) return [];
+          
+          if (s.type === 'xml') {
+            const text = await res.text();
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(text, "text/xml");
+            const items = Array.from(xml.querySelectorAll("item"));
+            return items.map((item, i) => ({
+              id: `jcy-${i}-${Date.now()}`,
+              title: item.querySelector("title")?.textContent || "",
+              company: "Remote",
+              location: "Global",
+              salary: "Market Rate",
+              description: item.querySelector("description")?.textContent?.replace(/<\/?[^>]+(>|$)/g, "") || "",
+              url: item.querySelector("link")?.textContent || "#",
+              source: s.name
+            }));
+          }
+
+          const d = await res.json();
+          if (s.name === 'ADZUNA_GLOBAL') {
+            return d.results.map((j: any) => ({
+              id: `adz-${j.id}`,
+              title: j.title.replace(/<\/?[^>]+(>|$)/g, ""),
+              company: j.company.display_name,
+              location: j.location.display_name,
+              salary: j.salary_min ? `$${Math.round(j.salary_min).toLocaleString()}` : "Market Rate",
+              description: j.description.replace(/<\/?[^>]+(>|$)/g, ""),
+              url: j.redirect_url,
+              source: s.name
+            }));
+          }
+          if (s.name === 'TECHMAP_DIRECT') {
+            return (Array.isArray(d) ? d : []).map((j: any, i: number) => ({
+              id: `tm-${i}-${Date.now()}`,
+              title: j.job_title,
+              company: j.company,
+              location: j.location,
+              salary: j.salary || "Market Rate",
+              description: j.job_description || "",
+              url: "#",
+              source: s.name
+            }));
+          }
+          if (s.name === 'FANTASTIC_JOBS') {
+            return (Array.isArray(d) ? d : []).map((j: any) => ({
+              id: `fan-${j.job_id}`,
+              title: j.title,
+              company: j.company,
+              location: j.location,
+              salary: "Market Rate",
+              description: "View details on Fantastic.jobs",
+              url: `https://fantastic.jobs/jobs/${j.job_id}`,
+              source: s.name
+            }));
+          }
+          return [];
+        } catch (err) {
+          console.error(`Error fetching from ${s.name}:`, err);
+          return [];
+        }
+      }));
+      
+      let combinedJobs = fetchResults.flat();
 
       if (combinedJobs.length === 0) {
         combinedJobs = [
