@@ -88,7 +88,7 @@ function App() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-12 text-center md:text-left">
             <div className="space-y-4 text-left">
               <p className="text-sm font-medium text-slate-400 text-left">
-                developed by <a href="https://github.com/bxzex" target="_blank" rel="noreferrer" className="text-slate-900 hover:underline font-bold lowercase">bxzex</a>
+                developed by <a href="https://bxzex.com" target="_blank" rel="noreferrer" className="text-slate-900 hover:underline font-bold lowercase">bxzex</a>
               </p>
               <div className="flex justify-center md:justify-start gap-6">
                 <a href="https://github.com/bxzex" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors"><Github size={20} /></a>
@@ -178,8 +178,8 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
 
                <div className="space-y-4 text-left pt-10 border-t border-slate-100">
                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Full Dataset Extraction</h4>
-                 <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 max-h-80 overflow-y-auto shadow-inner">
-                    <p className="text-xs text-slate-500 font-mono leading-relaxed whitespace-pre-wrap text-left">
+                 <div className="bg-white p-10 rounded-[2.5rem] border border-slate-200/60 max-h-96 overflow-y-auto shadow-sm">
+                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap text-left font-sans">
                       {profile.resumeText}
                     </p>
                  </div>
