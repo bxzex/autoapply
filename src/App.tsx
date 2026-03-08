@@ -13,7 +13,10 @@ import {
   Zap,
   Globe,
   Trash2,
-  Loader2
+  Loader2,
+  Github,
+  Linkedin,
+  Instagram
 } from 'lucide-react'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -87,15 +90,34 @@ function App() {
         {activeTab === 'settings' && <SettingsSection />}
       </main>
 
-      <footer className="max-w-[1400px] mx-auto px-12 py-12 border-t border-[#1f1f1f] mt-24">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 opacity-40 hover:opacity-100 transition-opacity duration-500">
-           <div className="text-[11px] font-mono tracking-tighter uppercase">
-             Build 2026.03.08-STABLE // Local Matching v1.0.4
+      <footer className="max-w-[1400px] mx-auto px-12 py-16 mt-24">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-12 border-t border-[#1f1f1f] pt-12 transition-opacity duration-500">
+           <div className="space-y-4">
+             <div className="text-[11px] font-mono tracking-tighter uppercase text-[#444]">
+               Build 2026.03.08-STABLE // Matching v1.0.4
+             </div>
+             <div className="text-[12px] font-medium text-[#666]">
+               developed by <a href="https://github.com/bxzex" target="_blank" rel="noopener noreferrer" className="text-[#888] hover:text-white transition-colors underline underline-offset-4 decoration-[#333]">bxzex</a>
+             </div>
            </div>
-           <div className="flex gap-8 text-[11px] font-mono uppercase tracking-tighter">
-             <span className="flex items-center gap-2"><Globe className="w-3 h-3" /> Open Source</span>
-             <span className="flex items-center gap-2"><ShieldCheck className="w-3 h-3" /> Zero Telemetry</span>
-             <span className="flex items-center gap-2"><Zap className="w-3 h-3" /> Latency: 4ms</span>
+           
+           <div className="flex items-center gap-10">
+             <div className="flex gap-6 border-r border-[#1f1f1f] pr-10">
+               <a href="https://github.com/bxzex" target="_blank" rel="noopener noreferrer" className="text-[#444] hover:text-white transition-colors">
+                 <Github className="w-4 h-4" />
+               </a>
+               <a href="https://linkedin.com/in/bxzex/" target="_blank" rel="noopener noreferrer" className="text-[#444] hover:text-white transition-colors">
+                 <Linkedin className="w-4 h-4" />
+               </a>
+               <a href="https://instagram.com/bxzex" target="_blank" rel="noopener noreferrer" className="text-[#444] hover:text-white transition-colors">
+                 <Instagram className="w-4 h-4" />
+               </a>
+             </div>
+             <div className="flex gap-8 text-[11px] font-mono uppercase tracking-tighter text-[#333]">
+               <span className="flex items-center gap-2 underline underline-offset-4 decoration-[#111]">Open Source</span>
+               <span className="flex items-center gap-2">Zero Telemetry</span>
+               <span className="flex items-center gap-2 underline underline-offset-4 decoration-[#111]">Latency: 4ms</span>
+             </div>
            </div>
         </div>
       </footer>
