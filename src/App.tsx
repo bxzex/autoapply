@@ -451,6 +451,7 @@ function HistorySection({ applications }: { applications: JobApplication[] }) {
 function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserProfile | null, onApply: () => void, onClose: () => void }) {
   const [step, setStep] = useState(0)
   const [isDone, setIsDone] = useState(false)
+  const [isAutomating, setIsAutomating] = useState(false)
 
   useEffect(() => {
     if (step < 3) {
@@ -469,6 +470,7 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
   ]
 
   const handleFinalStep = async () => {
+    setIsAutomating(true);
     // Save to local history first
     await saveApplication({
       id: `app-${j.id}-${Date.now()}`,
@@ -500,6 +502,7 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
     }
 
     onApply();
+    setIsAutomating(false);
     onClose();
     window.open(j.url, '_blank');
   }
@@ -509,13 +512,15 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
        <div className="w-full max-w-xl bg-white rounded-[3rem] shadow-2xl p-16 space-y-12 animate-in zoom-in-95 duration-300 text-left border border-slate-100">
           <div className="flex justify-between items-start">
             <div className="w-16 h-16 bg-[#0f172a] rounded-3xl flex items-center justify-center shadow-2xl shadow-slate-200">
-               {isDone ? <CheckCircle2 className="w-8 h-8 text-emerald-400" /> : <Zap className="w-8 h-8 text-white animate-pulse" />}
+               {isAutomating ? <Loader2 className="w-8 h-8 text-white animate-spin" /> : isDone ? <CheckCircle2 className="w-8 h-8 text-emerald-400" /> : <Zap className="w-8 h-8 text-white animate-pulse" />}
             </div>
-            <button onClick={onClose} className="text-slate-300 hover:text-slate-900 transition-colors"><AlertCircle size={24} /></button>
+            <button onClick={onClose} className="text-slate-300 hover:text-slate-900 transition-colors" disabled={isAutomating}><AlertCircle size={24} /></button>
           </div>
 
           <div className="space-y-2 text-left">
-            <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">{isDone ? "Identity Synced" : "Automating..."}</h3>
+            <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">
+              {isAutomating ? "Automation Active" : isDone ? "Identity Synced" : "Automating..."}
+            </h3>
             <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.3em]">{j.company}</p>
           </div>
 
@@ -541,12 +546,13 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
             <div className="animate-in slide-in-from-bottom-4 duration-500 pt-4">
               <button 
                 onClick={handleFinalStep}
-                className="w-full h-20 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[1.5rem] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.3em] shadow-xl shadow-emerald-200 transition-all active:scale-95"
+                disabled={isAutomating}
+                className="w-full h-20 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[1.5rem] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.3em] shadow-xl shadow-emerald-200 transition-all active:scale-95 disabled:opacity-50"
               >
-                Go to Final Step <ExternalLink size={18} />
+                {isAutomating ? "Processing Portal..." : "Go to Final Step"} <ExternalLink size={18} />
               </button>
               <p className="mt-6 text-[10px] text-slate-400 font-bold text-center leading-relaxed">
-                Your name ({profile?.firstName} {profile?.lastName}) and Resume are prepared. <br/>Simply paste or upload when the portal opens.
+                {isAutomating ? "Bridging to job portal through serverless layer..." : `Your name (${profile?.firstName} ${profile?.lastName}) and Resume are prepared. Simply paste or upload when the portal opens.`}
               </p>
             </div>
           )}

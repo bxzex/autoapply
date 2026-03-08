@@ -21,10 +21,15 @@ export default async function handler(
   let browser = null;
   try {
     // 1. Initialize Headless Browser (optimized for Vercel/Lambda)
+    const executablePath = await chromium.executablePath();
+    
+    // Sometimes chromium is busy being extracted/prepared
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     browser = await playwright.launch({
       args: chromium.args,
-      executablePath: await chromium.executablePath(),
-      headless: true,
+      executablePath,
+      headless: chromium.headless,
     });
 
     const context = await browser.newContext({
