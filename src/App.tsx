@@ -31,9 +31,15 @@ function cn(...inputs: ClassValue[]) {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'profile' | 'search' | 'config'>('profile')
+  const [activeTab, setActiveTab] = useState<'profile' | 'search' | 'config'>(() => {
+    return (localStorage.getItem('activeTab') as any) || 'profile';
+  })
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    localStorage.setItem('activeTab', activeTab);
+  }, [activeTab]);
 
   useEffect(() => {
     getProfile().then(data => {
@@ -114,7 +120,7 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
 
   useEffect(() => {
     if (profile?.resumeFile && !pdfUrl) {
-      const blob = new Blob([profile.resumeFile], { type: 'application/pdf' });
+      const blob = new Blob([profile.resumeFile as any], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       setPdfUrl(url);
       return () => URL.revokeObjectURL(url);
@@ -134,6 +140,7 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
       const resumeFile = new Uint8Array(await file.arrayBuffer());
 
       onProfileUpdate({ 
+        ...profile,
         id: 'current', 
         name: file.name, 
         resumeText: text, 
@@ -141,7 +148,7 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
         skills, 
         embedding, 
         updatedAt: Date.now() 
-      });
+      } as UserProfile);
     } catch (err) {
       console.error(err);
       alert('Error parsing document. Ensure worker is initialized.');
@@ -199,7 +206,18 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
                    </div>
 
                    <div className="space-y-4 text-left pt-10 border-t border-slate-100">
-                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Experience Profile</h4>
+                     <div className="flex justify-between items-center">
+                       <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Experience Profile</h4>
+                       <button 
+                         onClick={() => {
+                           navigator.clipboard.writeText(profile.resumeText);
+                           alert('Resume text copied to clipboard!');
+                         }}
+                         className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest"
+                       >
+                         Copy Text
+                       </button>
+                     </div>
                      <div className="bg-white p-8 rounded-[2rem] border border-slate-200/60 max-h-80 overflow-y-auto shadow-sm">
                         <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap text-left font-sans">
                           {profile.resumeText.slice(0, 1500)}...
@@ -440,6 +458,15 @@ function ApplyModal({ j, profile, onClose }: { j: any, profile: UserProfile | nu
 }
 
 function Modal({ j, profile, onClose }: { j: any, profile: UserProfile | null, onClose: () => void }) {
+  const matchingSkills = React.useMemo(() => {
+    if (!profile || !j.description) return [];
+    const lowerDesc = j.description.toLowerCase();
+    return profile.skills.filter(s => lowerDesc.includes(s.toLowerCase())).slice(0, 3);
+  }, [profile, j]);
+
+  const defaultSkills = profile?.skills.slice(0, 3) || ['experience', 'expertise', 'leadership'];
+  const displaySkills = matchingSkills.length > 0 ? matchingSkills : defaultSkills;
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
        <div className="w-full max-w-2xl bg-white rounded-[3rem] shadow-2xl p-16 space-y-12 animate-in zoom-in-95 duration-200 text-left border border-slate-100">
@@ -458,10 +485,10 @@ function Modal({ j, profile, onClose }: { j: any, profile: UserProfile | null, o
                Strategic Protocol
              </h4>
              <div className="space-y-4 text-left">
-                {[1,2,3].map(i => (
+                {displaySkills.map((skill, i) => (
                   <div key={i} className="flex gap-6 p-8 bg-slate-50 rounded-[2rem] border border-slate-100 transition-colors hover:bg-white hover:border-slate-200 text-left">
-                     <div className="text-xl font-black text-slate-200 italic text-left">0{i}</div>
-                     <p className="text-sm text-slate-600 leading-relaxed font-bold text-left">Emphasize your <span className="text-[#0f172a] underline decoration-slate-300 decoration-2 underline-offset-4">{profile?.skills[i] || 'experience'}</span> to maximize vector match score.</p>
+                     <div className="text-xl font-black text-slate-200 italic text-left">0{i+1}</div>
+                     <p className="text-sm text-slate-600 leading-relaxed font-bold text-left">Emphasize your <span className="text-[#0f172a] underline decoration-slate-300 decoration-2 underline-offset-4">{skill}</span> to maximize vector match score.</p>
                   </div>
                 ))}
              </div>
