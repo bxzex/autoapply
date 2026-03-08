@@ -21,17 +21,19 @@ export default async function handler(
 
   let browser = null;
   try {
-    // 1. Setup Robust Browser Bridge with Manual Library Path
-    // Using chromium-min with explicit versioning for Vercel
+    // 1. Configure Browser Bridge with Robust Library Resolution
     const executablePath = await chromium.executablePath(
       'https://github.com/Sparticuz/chromium/releases/download/v132.0.0/chromium-v132.0.0-pack.tar'
     );
 
-    // CRITICAL: Point the system to where libraries are extracted
+    // CRITICAL FIX: Ensure shared libraries are findable
     if (process.env.VERCEL) {
       const execDir = path.dirname(executablePath);
       process.env.LD_LIBRARY_PATH = `${execDir}:${process.env.LD_LIBRARY_PATH || ""}`;
     }
+
+    // Extraction Buffer
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     browser = await puppeteer.launch({
       args: [
@@ -39,7 +41,9 @@ export default async function handler(
         "--hide-scrollbars", 
         "--disable-web-security", 
         "--no-sandbox",
-        "--disable-setuid-sandbox"
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu"
       ],
       defaultViewport: chromium.defaultViewport,
       executablePath,
@@ -54,12 +58,11 @@ export default async function handler(
 
     // 3. Automated Form Preparation
     try {
-      // Direct field injection
-      if (firstName) await page.type('input[name*="first"], input[name*="given"]', firstName).catch(() => null);
-      if (lastName) await page.type('input[name*="last"], input[name*="family"]', lastName).catch(() => null);
-      if (email) await page.type('input[type="email"], input[name*="email"]', email).catch(() => null);
+      if (firstName) await page.type('input[name*="first"], input[name*="given"]', firstName, { delay: 50 }).catch(() => null);
+      if (lastName) await page.type('input[name*="last"], input[name*="family"]', lastName, { delay: 50 }).catch(() => null);
+      if (email) await page.type('input[type="email"], input[name*="email"]', email, { delay: 50 }).catch(() => null);
     } catch (err) {
-      console.warn('Protocol Injection Error:', err);
+      console.warn('Field injection error:', err);
     }
 
     // 4. Capture Visual Telemetry
@@ -74,8 +77,8 @@ export default async function handler(
     });
 
   } catch (error: any) {
-    console.error('Automation Bridge Critical Failure:', error);
-    return response.status(500).json({ error: error.message });
+    console.error('Automation Protocol Critical Failure:', error);
+    return response.status(500).json({ error: error.message || 'Browser failed to launch' });
   } finally {
     if (browser) {
       await browser.close();

@@ -325,7 +325,7 @@ function SearchSection({ profile, onApply }: { profile: UserProfile | null, onAp
         <div className="space-y-4 text-left">
           <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 italic text-left uppercase">Market Feed</h2>
           <p className="text-xl text-slate-500 leading-relaxed max-w-2xl text-left">
-            Query global listings from 5 aggregate sources. Matching is computed on your local hardware.
+            Query global listings from top aggregate sources. High-fidelity matching computed instantly.
           </p>
         </div>
 
