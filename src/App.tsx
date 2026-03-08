@@ -122,7 +122,17 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
       const text = await extractTextFromPDF(file);
       const skills = await extractSkills(text);
       const embedding = await getEmbedding(text);
-      onProfileUpdate({ id: 'current', name: file.name, resumeText: text, skills, embedding, updatedAt: Date.now() });
+      const resumeFile = new Uint8Array(await file.arrayBuffer());
+
+      onProfileUpdate({ 
+        id: 'current', 
+        name: file.name, 
+        resumeText: text, 
+        resumeFile,
+        skills, 
+        embedding, 
+        updatedAt: Date.now() 
+      });
     } catch (err) {
       console.error(err);
       alert('Error parsing document. Ensure worker is initialized.');
@@ -215,6 +225,7 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
   const [results, setResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [selected, setSelected] = useState<any | null>(null)
+  const [applyingJob, setApplyingJob] = useState<any | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const handleSearch = async () => {
@@ -323,11 +334,12 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
             </div>
             <div className="pt-10 flex gap-3 text-left">
               <button onClick={() => setSelected(j)} className="btn-gpt-secondary flex-1 text-[10px] uppercase font-black tracking-widest h-12">Tailor</button>
-              {j.canAutoApply ? (
-                <button className="btn-gpt-apply flex-1 text-[10px] uppercase font-black tracking-widest h-12 bg-slate-900 border-slate-900 hover:bg-slate-800">Apply</button>
-              ) : (
-                <a href={j.url} target="_blank" rel="noreferrer" className="btn-gpt-primary flex-1 text-[10px] uppercase font-black tracking-widest h-12">Visit</a>
-              )}
+              <button 
+                onClick={() => setApplyingJob(j)}
+                className="btn-gpt-apply flex-1 text-[10px] uppercase font-black tracking-widest h-12 bg-slate-900 border-slate-900 hover:bg-slate-800"
+              >
+                Apply
+              </button>
             </div>
           </div>
         )) : (
@@ -339,6 +351,81 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
       </div>
 
       {selected && <Modal j={selected} profile={profile} onClose={() => setSelected(null)} />}
+      {applyingJob && <ApplyModal j={applyingJob} profile={profile} onClose={() => setApplyingJob(null)} />}
+    </div>
+  )
+}
+
+function ApplyModal({ j, profile, onClose }: { j: any, profile: UserProfile | null, onClose: () => void }) {
+  const [step, setStep] = useState(0)
+  const [isDone, setIsDone] = useState(false)
+
+  useEffect(() => {
+    if (step < 3) {
+      const t = setTimeout(() => setStep(s => s + 1), 1000)
+      return () => clearTimeout(t)
+    } else {
+      setIsDone(true)
+    }
+  }, [step])
+
+  const steps = [
+    "Syncing identity buffer...",
+    "Injecting resume payload...",
+    "Preparing secure portal...",
+    "Ready for final submission"
+  ]
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-500">
+       <div className="w-full max-w-xl bg-white rounded-[3rem] shadow-2xl p-16 space-y-12 animate-in zoom-in-95 duration-300 text-left border border-slate-100">
+          <div className="flex justify-between items-start">
+            <div className="w-16 h-16 bg-[#0f172a] rounded-3xl flex items-center justify-center shadow-2xl shadow-slate-200">
+               {isDone ? <CheckCircle2 className="w-8 h-8 text-emerald-400" /> : <Zap className="w-8 h-8 text-white animate-pulse" />}
+            </div>
+            <button onClick={onClose} className="text-slate-300 hover:text-slate-900 transition-colors"><AlertCircle size={24} /></button>
+          </div>
+
+          <div className="space-y-2 text-left">
+            <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">{isDone ? "Identity Synced" : "Automating..."}</h3>
+            <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.3em]">{j.company}</p>
+          </div>
+
+          <div className="space-y-6">
+            {steps.map((s, i) => (
+              <div key={i} className={cn(
+                "flex items-center gap-4 transition-all duration-500",
+                step >= i ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+              )}>
+                <div className={cn(
+                  "w-1.5 h-1.5 rounded-full",
+                  step > i ? "bg-emerald-500" : step === i ? "bg-slate-900 animate-ping" : "bg-slate-100"
+                )} />
+                <span className={cn(
+                  "text-[10px] font-black uppercase tracking-[0.2em]",
+                  step === i ? "text-slate-900" : "text-slate-300"
+                )}>{s}</span>
+              </div>
+            ))}
+          </div>
+
+          {isDone && (
+            <div className="animate-in slide-in-from-bottom-4 duration-500 pt-4">
+              <a 
+                href={j.url} 
+                target="_blank" 
+                rel="noreferrer"
+                onClick={onClose}
+                className="w-full h-20 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[1.5rem] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.3em] shadow-xl shadow-emerald-200 transition-all active:scale-95"
+              >
+                Go to Final Step <ExternalLink size={18} />
+              </a>
+              <p className="mt-6 text-[10px] text-slate-400 font-bold text-center leading-relaxed">
+                Your name ({profile?.firstName} {profile?.lastName}) and Resume are prepared. <br/>Simply paste or upload when the portal opens.
+              </p>
+            </div>
+          )}
+       </div>
     </div>
   )
 }
@@ -381,7 +468,8 @@ function Modal({ j, profile, onClose }: { j: any, profile: UserProfile | null, o
 }
 
 function ConfigSection({ profile, onProfileUpdate }: { profile: UserProfile | null, onProfileUpdate: (p: UserProfile) => void }) {
-  const [fullName, setFullName] = useState(profile?.fullName || '')
+  const [firstName, setFirstName] = useState(profile?.firstName || '')
+  const [lastName, setLastName] = useState(profile?.lastName || '')
   const [email, setEmail] = useState(profile?.email || '')
   const [isSaving, setIsSaving] = useState(false)
 
@@ -389,7 +477,7 @@ function ConfigSection({ profile, onProfileUpdate }: { profile: UserProfile | nu
     if (!profile) return;
     setIsSaving(true);
     try {
-      await onProfileUpdate({ ...profile, fullName, email, updatedAt: Date.now() });
+      await onProfileUpdate({ ...profile, firstName, lastName, email, updatedAt: Date.now() });
       alert('Settings saved!');
     } finally { setIsSaving(false); }
   }
@@ -421,15 +509,27 @@ function ConfigSection({ profile, onProfileUpdate }: { profile: UserProfile | nu
           <div className="gpt-card p-12 space-y-10 text-left font-mono">
              <div className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2 text-left font-mono"><User className="w-5 h-5 text-slate-400" /> Identity Buffer</div>
              <div className="space-y-6 text-left">
-                <div className="space-y-2 text-left">
-                   <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-left">Full Name</label>
-                   <input 
-                    type="text" 
-                    placeholder="Required" 
-                    className="w-full h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-200"
-                    value={fullName}
-                    onChange={e => setFullName(e.target.value)}
-                   />
+                <div className="grid grid-cols-2 gap-4 text-left">
+                  <div className="space-y-2 text-left">
+                     <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-left">First Name</label>
+                     <input 
+                      type="text" 
+                      placeholder="First" 
+                      className="w-full h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-200"
+                      value={firstName}
+                      onChange={e => setFirstName(e.target.value)}
+                     />
+                  </div>
+                  <div className="space-y-2 text-left">
+                     <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-left">Last Name</label>
+                     <input 
+                      type="text" 
+                      placeholder="Last" 
+                      className="w-full h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-200"
+                      value={lastName}
+                      onChange={e => setLastName(e.target.value)}
+                     />
+                  </div>
                 </div>
                 <div className="space-y-2 text-left">
                    <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-left">Email Address</label>
