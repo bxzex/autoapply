@@ -1,0 +1,42 @@
+[
+  {
+    "id": "1",
+    "title": "Senior AI Software Engineer",
+    "company": "Cognitive Nexus",
+    "location": "Remote (Global)",
+    "description": "Building next-gen LLM interfaces using React and local inference engines. Experience with WebGPU and Transformers.js is a massive plus. High ownership and impact role.",
+    "url": "https://jooble.org"
+  },
+  {
+    "id": "2",
+    "title": "Staff Frontend Architect",
+    "company": "Velocity Stream",
+    "location": "Palo Alto, CA / Remote",
+    "description": "Leading the transition to a modern, high-performance UI stack. Deep expertise in React, TypeScript, and Tailwind CSS. We value clean code and exceptional user experiences.",
+    "url": "https://jooble.org"
+  },
+  {
+    "id": "3",
+    "title": "Rust Backend Developer",
+    "company": "SecureSphere",
+    "location": "Berlin, Germany",
+    "description": "Developing ultra-secure backend systems in Rust. Performance is everything. Working on distributed systems and cryptographically secured APIs.",
+    "url": "https://jooble.org"
+  },
+  {
+    "id": "4",
+    "title": "Product Designer (UI/UX)",
+    "company": "Aura Labs",
+    "location": "Remote",
+    "description": "Designing beautiful, intuitive interfaces for creative professionals. Proficiency in Figma and a strong eye for typography and motion design are required.",
+    "url": "https://jooble.org"
+  },
+  {
+    "id": "5",
+    "title": "Full Stack Developer (Next.js)",
+    "company": "Echo Fintech",
+    "location": "London, UK",
+    "description": "Joining a fast-growing team in the fintech space. Building scalable web applications with Next.js, Node.js, and PostgreSQL. Focus on reliability and security.",
+    "url": "https://jooble.org"
+  }
+]
