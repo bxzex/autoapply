@@ -452,6 +452,7 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
   const [step, setStep] = useState(0)
   const [isDone, setIsDone] = useState(false)
   const [isAutomating, setIsAutomating] = useState(false)
+  const [screenshot, setScreenshot] = useState<string | null>(null)
 
   useEffect(() => {
     if (step < 3) {
@@ -463,15 +464,14 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
   }, [step])
 
   const steps = [
-    "Syncing identity buffer...",
-    "Injecting resume payload...",
-    "Preparing secure portal...",
-    "Ready for final submission"
+    "Synchronizing Identity...",
+    "Injecting Resume Dataset...",
+    "Securing Application Portal...",
+    "Ready for Verification"
   ]
 
   const handleFinalStep = async () => {
     setIsAutomating(true);
-    // Save to local history first
     await saveApplication({
       id: `app-${j.id}-${Date.now()}`,
       jobId: j.id,
@@ -484,9 +484,8 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
       appliedAt: Date.now()
     });
 
-    // Initiate Serverless Automation
     try {
-      await fetch('/api/apply', {
+      const res = await fetch('/api/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -497,65 +496,121 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
           resumeText: profile?.resumeText
         })
       });
+      const data = await res.json();
+      if (data.screenshot) setScreenshot(`data:image/jpeg;base64,${data.screenshot}`);
     } catch (err) {
-      console.error('Automation trigger failed:', err);
+      console.error('Automation error:', err);
+    } finally {
+      setIsAutomating(false);
+      onApply();
+      // Keep modal open briefly to show the screenshot if it arrived
+      setTimeout(() => {
+        onClose();
+        window.open(j.url, '_blank');
+      }, screenshot ? 2000 : 500);
     }
-
-    onApply();
-    setIsAutomating(false);
-    onClose();
-    window.open(j.url, '_blank');
   }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-500">
-       <div className="w-full max-w-xl bg-white rounded-[3rem] shadow-2xl p-16 space-y-12 animate-in zoom-in-95 duration-300 text-left border border-slate-100">
-          <div className="flex justify-between items-start">
-            <div className="w-16 h-16 bg-[#0f172a] rounded-3xl flex items-center justify-center shadow-2xl shadow-slate-200">
-               {isAutomating ? <Loader2 className="w-8 h-8 text-white animate-spin" /> : isDone ? <CheckCircle2 className="w-8 h-8 text-emerald-400" /> : <Zap className="w-8 h-8 text-white animate-pulse" />}
-            </div>
-            <button onClick={onClose} className="text-slate-300 hover:text-slate-900 transition-colors" disabled={isAutomating}><AlertCircle size={24} /></button>
-          </div>
-
-          <div className="space-y-2 text-left">
-            <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">
-              {isAutomating ? "Automation Active" : isDone ? "Identity Synced" : "Automating..."}
-            </h3>
-            <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.3em]">{j.company}</p>
-          </div>
-
-          <div className="space-y-6">
-            {steps.map((s, i) => (
-              <div key={i} className={cn(
-                "flex items-center gap-4 transition-all duration-500",
-                step >= i ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
-              )}>
-                <div className={cn(
-                  "w-1.5 h-1.5 rounded-full",
-                  step > i ? "bg-emerald-500" : step === i ? "bg-slate-900 animate-ping" : "bg-slate-100"
-                )} />
-                <span className={cn(
-                  "text-[10px] font-black uppercase tracking-[0.2em]",
-                  step === i ? "text-slate-900" : "text-slate-300"
-                )}>{s}</span>
+       <div className="w-full max-w-4xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-300 text-left border border-slate-100">
+          
+          {/* Left Side: Status & Controls */}
+          <div className="p-12 md:p-16 space-y-12 flex-1 border-r border-slate-50">
+            <div className="flex justify-between items-start">
+              <div className="w-16 h-16 bg-[#0f172a] rounded-3xl flex items-center justify-center shadow-2xl shadow-slate-200">
+                 {isAutomating ? <Loader2 className="w-8 h-8 text-white animate-spin" /> : isDone ? <CheckCircle2 className="w-8 h-8 text-emerald-400" /> : <Zap className="w-8 h-8 text-white animate-pulse" />}
               </div>
-            ))}
+              <button onClick={onClose} className="text-slate-300 hover:text-slate-900 transition-colors" disabled={isAutomating}><AlertCircle size={24} /></button>
+            </div>
+
+            <div className="space-y-2 text-left">
+              <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">
+                {isAutomating ? "Automation Active" : isDone ? "Identity Ready" : "Processing..."}
+              </h3>
+              <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.3em]">{j.company}</p>
+            </div>
+
+            <div className="space-y-6">
+              {steps.map((s, i) => (
+                <div key={i} className={cn(
+                  "flex items-center gap-4 transition-all duration-500",
+                  step >= i ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+                )}>
+                  <div className={cn(
+                    "w-1.5 h-1.5 rounded-full",
+                    step > i ? "bg-emerald-500" : step === i ? "bg-slate-900 animate-ping" : "bg-slate-100"
+                  )} />
+                  <span className={cn(
+                    "text-[10px] font-black uppercase tracking-[0.2em]",
+                    step === i ? "text-slate-900" : "text-slate-300"
+                  )}>{s}</span>
+                </div>
+              ))}
+            </div>
+
+            {isDone && (
+              <div className="animate-in slide-in-from-bottom-4 duration-500 pt-4">
+                <button 
+                  onClick={handleFinalStep}
+                  disabled={isAutomating}
+                  className="w-full h-20 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[1.5rem] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.3em] shadow-xl shadow-emerald-200 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {isAutomating ? "Processing Portal..." : "Execute Auto-Apply"} <ExternalLink size={18} />
+                </button>
+                <p className="mt-6 text-[10px] text-slate-400 font-bold text-center leading-relaxed">
+                  {isAutomating ? "Our serverless agent is initializing the portal..." : `Your identity (${profile?.firstName}) is ready. Auto-apply will prepare the form for you.`}
+                </p>
+              </div>
+            )}
           </div>
 
-          {isDone && (
-            <div className="animate-in slide-in-from-bottom-4 duration-500 pt-4">
-              <button 
-                onClick={handleFinalStep}
-                disabled={isAutomating}
-                className="w-full h-20 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[1.5rem] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.3em] shadow-xl shadow-emerald-200 transition-all active:scale-95 disabled:opacity-50"
-              >
-                {isAutomating ? "Processing Portal..." : "Go to Final Step"} <ExternalLink size={18} />
-              </button>
-              <p className="mt-6 text-[10px] text-slate-400 font-bold text-center leading-relaxed">
-                {isAutomating ? "Bridging to job portal through serverless layer..." : `Your name (${profile?.firstName} ${profile?.lastName}) and Resume are prepared. Simply paste or upload when the portal opens.`}
-              </p>
-            </div>
-          )}
+          {/* Right Side: Visual Render (Viewport) */}
+          <div className="w-full md:w-[400px] bg-slate-50 p-8 flex flex-col border-l border-slate-100">
+             <div className="flex items-center gap-2 mb-4 px-2">
+                <div className="flex gap-1.5">
+                   <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
+                   <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
+                   <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
+                </div>
+                <div className="flex-1 h-6 bg-white rounded-md border border-slate-200 flex items-center px-3">
+                   <span className="text-[8px] text-slate-300 font-mono truncate">{j.url}</span>
+                </div>
+             </div>
+             
+             <div className="flex-1 bg-white rounded-xl border border-slate-200 overflow-hidden relative shadow-inner group">
+                {screenshot ? (
+                  <img src={screenshot} className="w-full h-full object-cover animate-in fade-in duration-1000" alt="Portal Preview" />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-4">
+                     {isAutomating ? (
+                       <>
+                         <div className="w-12 h-12 border-2 border-slate-100 border-t-slate-900 rounded-full animate-spin" />
+                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Initializing Headless Viewport...</span>
+                       </>
+                     ) : (
+                       <>
+                         <Layers className="w-12 h-12 text-slate-100" />
+                         <span className="text-[10px] font-bold text-slate-200 uppercase tracking-widest">Awaiting Bridge Connection</span>
+                       </>
+                     )}
+                  </div>
+                )}
+                
+                {/* Simulated Scanning Overlay */}
+                {isAutomating && !screenshot && (
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/5 to-transparent h-[200%] -translate-y-full animate-[scan_2s_linear_infinite]" />
+                )}
+             </div>
+             
+             <div className="mt-4 px-2 flex justify-between items-center">
+                <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Portal Render Engine v1.0</span>
+                <div className="flex items-center gap-1">
+                   <div className={cn("w-1.5 h-1.5 rounded-full", isAutomating ? "bg-emerald-500 animate-pulse" : "bg-slate-200")} />
+                   <span className="text-[8px] font-bold text-slate-300 uppercase">{isAutomating ? "Live" : "Idle"}</span>
+                </div>
+             </div>
+          </div>
        </div>
     </div>
   )

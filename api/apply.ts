@@ -67,11 +67,16 @@ export default async function handler(
       console.warn('Filling failed, site might be non-standard:', err);
     }
 
-    // 4. Return success with a screenshot or status
+    // 4. Capture Progress Screenshot
+    const screenshot = await page.screenshot({ type: 'jpeg', quality: 60 });
+    const base64Screenshot = screenshot.toString('base64');
+
+    // 5. Return success with the screenshot
     return response.status(200).json({ 
       status: 'success', 
       message: 'Automation initiated. Data prepared on portal.',
-      jobUrl
+      jobUrl,
+      screenshot: base64Screenshot
     });
 
   } catch (error: any) {
