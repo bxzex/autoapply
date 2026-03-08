@@ -215,6 +215,12 @@ function ListingsSection({ profile }: { profile: UserProfile | null }) {
           url: `https://jobicy.com/jobs-rss-feed?query=${encodeURIComponent(query)}`,
           proxy: true,
           type: 'xml'
+        },
+        // Source 5: OkJob
+        {
+          name: 'OKJOB_IO',
+          url: `https://okjob.io/api/job-listings?keyword=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`,
+          proxy: true
         }
       ];
 
@@ -276,6 +282,20 @@ function ListingsSection({ profile }: { profile: UserProfile | null }) {
               description: "View details on Fantastic.jobs",
               url: `https://fantastic.jobs/jobs/${j.job_id}`,
               source: s.name
+            }));
+          }
+          if (s.name === 'OKJOB_IO') {
+            const listings = d.job_listings || d; // Handle variations in response
+            return (Array.isArray(listings) ? listings : []).map((j: any, i: number) => ({
+              id: `okj-${j.job_id || i}-${Date.now()}`,
+              title: j.title || j.job_title,
+              company: j.company,
+              location: j.location,
+              salary: j.salary || "Market Rate",
+              description: j.description || j.job_description || "",
+              url: `https://okjob.io/jobs/${j.job_id}`,
+              source: s.name,
+              canAutoApply: true // Special flag for OkJob
             }));
           }
           return [];
@@ -359,8 +379,12 @@ function ListingsSection({ profile }: { profile: UserProfile | null }) {
                    <p className="text-xs text-[#555] line-clamp-4 leading-relaxed font-medium">{j.description}</p>
                 </div>
                 <div className="flex gap-2 pt-6">
-                   <button onClick={() => setSelected(j)} className="btn-secondary flex-1">TAILOR</button>
-                   <a href={j.url} target="_blank" rel="noreferrer" className="btn-primary flex-1 flex items-center justify-center gap-2">APPLY <ArrowUpRight size={12} /></a>
+                   <button onClick={() => setSelected(j)} className="btn-secondary flex-1 text-[9px]">TAILOR</button>
+                   {j.canAutoApply ? (
+                     <button className="flex-1 h-10 px-4 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest rounded-sm hover:bg-blue-500 transition-colors">ONE_CLICK_APPLY</button>
+                   ) : (
+                     <a href={j.url} target="_blank" rel="noreferrer" className="btn-primary flex-1 flex items-center justify-center gap-2">APPLY <ArrowUpRight size={12} /></a>
+                   )}
                 </div>
              </div>
            )) : (
@@ -433,9 +457,17 @@ function ConfigSection() {
           </div>
 
           <div className="bg-black p-8 space-y-8">
-             <div className="mono-label flex items-center gap-2 text-white text-left"><Fingerprint className="w-3 h-3" /> DATA_INTEGRITY</div>
+             <div className="mono-label flex items-center gap-2 text-white"><Fingerprint className="w-3 h-3" /> APPLICANT_IDENTITY</div>
              <div className="space-y-4 text-left">
-                <p className="text-xs text-[#666] leading-relaxed uppercase tracking-wider">Storage is limited to the local origin. Zero telemetry or external synchronization is active.</p>
+                <div className="space-y-2">
+                   <div className="mono-label text-[#444]">FULL_NAME</div>
+                   <input type="text" placeholder="REQUIRED" className="w-full bg-black border border-[#1a1a1a] h-10 px-4 text-xs font-mono focus:border-white outline-none" />
+                </div>
+                <div className="space-y-2">
+                   <div className="mono-label text-[#444]">EMAIL_ADDRESS</div>
+                   <input type="email" placeholder="REQUIRED" className="w-full bg-black border border-[#1a1a1a] h-10 px-4 text-xs font-mono focus:border-white outline-none" />
+                </div>
+                <p className="text-[10px] text-[#333] leading-relaxed uppercase tracking-wider">Storage is limited to the local origin. Zero telemetry or external synchronization is active.</p>
                 <button 
                   onClick={() => confirm('Purge local database?') && (indexedDB.deleteDatabase('auto-apply-ai-db'), window.location.reload())}
                   className="w-full border border-red-900/50 py-3 text-[10px] font-black tracking-[0.3em] text-red-500 hover:bg-red-900/20 transition-all uppercase"
@@ -444,6 +476,7 @@ function ConfigSection() {
                 </button>
              </div>
           </div>
+
        </div>
     </div>
   )
