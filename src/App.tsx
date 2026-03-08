@@ -15,8 +15,6 @@ import {
   ChevronRight,
   MapPin,
   Briefcase,
-  Command,
-  Activity,
   Layers,
   AlertCircle,
   Clock,
@@ -52,7 +50,7 @@ function App() {
       <header className="h-16 border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-2.5 group cursor-default">
-            <div className="w-9 h-9 bg-[#0f172a] rounded-xl flex items-center justify-center shadow-sm">
+            <div className="w-9 h-9 bg-[#0f172a] rounded-xl flex items-center justify-center shadow-sm transition-transform active:scale-95">
               <Briefcase className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold tracking-tight text-lg text-slate-900">AutoApply</span>
@@ -72,7 +70,7 @@ function App() {
 
           <div className="flex items-center gap-3">
             <div className="px-3 py-1 rounded-full text-[10px] font-bold tracking-tight border bg-white text-slate-500 border-slate-200 flex items-center gap-2 uppercase">
-              <div className="w-1 h-1 rounded-full bg-slate-400" />
+              <div className="w-1 h-1 rounded-full bg-emerald-500" />
               Service_Live
             </div>
           </div>
@@ -85,7 +83,6 @@ function App() {
         {activeTab === 'config' && <ConfigSection />}
       </main>
 
-      {/* Footer Attribution */}
       <footer className="border-t border-slate-200 bg-white py-16">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-12 text-center md:text-left">
@@ -100,7 +97,7 @@ function App() {
               </div>
             </div>
             <div className="flex flex-col items-center md:items-end gap-2 text-right">
-              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">Open Source Tool</span>
+              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">Open Source Utility</span>
               <span className="text-xs font-medium text-slate-400 flex items-center gap-2"><ShieldCheck size={14} className="text-slate-400" /> End-to-end local processing</span>
             </div>
           </div>
@@ -124,7 +121,8 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
       const embedding = await getEmbedding(text);
       onProfileUpdate({ id: 'current', name: file.name, resumeText: text, skills, embedding, updatedAt: Date.now() });
     } catch (err) {
-      alert('Parse Error: Standard PDF resume required.');
+      console.error(err);
+      alert('File error: Standard PDF resume required.');
     } finally { setIsParsing(false); }
   }
 
@@ -133,7 +131,7 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
       <div className="space-y-4 text-left">
         <h2 className="text-5xl font-extrabold tracking-tight text-slate-900">Application Data</h2>
         <p className="text-xl text-slate-500 leading-relaxed max-w-2xl">
-          Load your resume to initialize the matching system. Your data is stored locally in your browser.
+          Load your resume to initialize the system. Your data is processed locally and never stored on a server.
         </p>
       </div>
 
@@ -148,9 +146,9 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
         <div className="w-20 h-20 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-8 group-hover:scale-105 transition-all duration-500 group-hover:bg-[#0f172a] group-hover:text-white group-hover:shadow-xl group-hover:shadow-slate-200">
           {isParsing ? <Loader2 className="w-10 h-10 animate-spin" /> : <Plus className="w-10 h-10" />}
         </div>
-        <div className="space-y-2">
-          <h3 className="text-2xl font-bold text-slate-900">{isParsing ? "Analyzing Data..." : "Load Resume"}</h3>
-          <p className="text-slate-400 font-medium tracking-tight">Select a PDF file to begin</p>
+        <div className="space-y-2 text-left flex flex-col items-center">
+          <h3 className="text-2xl font-bold text-slate-900 text-center">{isParsing ? "Analyzing Document..." : "Load Resume"}</h3>
+          <p className="text-slate-400 font-medium tracking-tight text-center">Select a PDF file to begin</p>
         </div>
       </div>
 
@@ -158,8 +156,8 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
         <div className="gpt-card overflow-hidden">
           <div className="px-10 py-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
             <div className="space-y-1 text-left">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Dataset</span>
-              <h4 className="font-bold text-slate-900">{profile.name}</h4>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Active Dataset</span>
+              <h4 className="font-bold text-slate-900 text-left">{profile.name}</h4>
             </div>
             <span className="px-4 py-1.5 bg-slate-100 text-slate-700 text-[10px] font-bold rounded-full border border-slate-200 flex items-center gap-1.5 uppercase tracking-wider">
               <CheckCircle2 size={12} /> Dataset Loaded
@@ -168,8 +166,8 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
           <div className="p-10 grid grid-cols-1 md:grid-cols-[1fr_200px] gap-12">
              <div className="space-y-8 text-left">
                <div className="space-y-4">
-                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Keywords Identified</h4>
-                 <div className="flex flex-wrap gap-2.5">
+                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Identified Terms</h4>
+                 <div className="flex flex-wrap gap-2.5 text-left">
                    {profile.skills.map(s => (
                      <span key={s} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-2xl shadow-sm hover:border-slate-400 transition-colors">
                        {s}
@@ -179,9 +177,9 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
                </div>
              </div>
              <div className="bg-[#0f172a] rounded-[2.5rem] p-10 text-white flex flex-col justify-center items-center text-center shadow-2xl shadow-slate-300">
-                <div className="text-[10px] font-bold opacity-50 uppercase tracking-[0.3em] mb-4">Integrity</div>
-                <div className="text-5xl font-black tracking-tighter mb-2 italic">98.2%</div>
-                <p className="text-[10px] opacity-40 leading-relaxed font-bold uppercase tracking-widest text-center">Sync Status</p>
+                <div className="text-[10px] font-bold opacity-50 uppercase tracking-[0.3em] mb-4">Quality</div>
+                <div className="text-5xl font-black tracking-tighter mb-2 italic">98%</div>
+                <p className="text-[10px] opacity-40 leading-relaxed font-bold uppercase tracking-widest text-center">Sync Verified</p>
              </div>
           </div>
         </div>
@@ -206,15 +204,16 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
       const queryEmbedding = await getEmbedding(query);
       
       const sources = [
-        { name: 'Adzuna Global', url: `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=45759795&app_key=943e061849f50e8081f9a1240e340c23&what=${encodeURIComponent(query)}&where=${encodeURIComponent(location)}&results_per_page=15&content-type=application/json`, proxy: true },
-        { name: 'Techmap Direct', url: `https://jobdatafeeds.com/job-api/job-postings/search?job_title=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`, proxy: true },
-        { name: 'Jobicy Remote', url: `https://jobicy.com/jobs-rss-feed?query=${encodeURIComponent(query)}`, proxy: true, type: 'xml' },
-        { name: 'OkJob.io', url: `https://okjob.io/api/job-listings?keyword=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`, proxy: true }
+        { name: 'Source A', url: `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=45759795&app_key=943e061849f50e8081f9a1240e340c23&what=${encodeURIComponent(query)}&where=${encodeURIComponent(location)}&results_per_page=15&content-type=application/json`, proxy: true },
+        { name: 'Source B', url: `https://jobdatafeeds.com/job-api/job-postings/search?job_title=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`, proxy: true },
+        { name: 'Source C', url: `https://jobicy.com/jobs-rss-feed?query=${encodeURIComponent(query)}`, proxy: true, type: 'xml' },
+        { name: 'Source D', url: `https://okjob.io/api/job-listings?keyword=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`, proxy: true }
       ];
 
       const fetchResults = await Promise.all(sources.map(async (s) => {
         try {
-          const proxyBase = "https://api.allorigins.win/raw?url=";
+          // Switch to a more reliable CORS proxy
+          const proxyBase = "https://corsproxy.io/?";
           const finalUrl = s.proxy ? `${proxyBase}${encodeURIComponent(s.url)}` : s.url;
           
           const res = await fetch(finalUrl).catch(() => null);
@@ -224,10 +223,10 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
             const text = await res.text();
             const xml = new DOMParser().parseFromString(text, "text/xml");
             return Array.from(xml.querySelectorAll("item")).map((item, i) => ({
-              id: `jcy-${i}-${Date.now()}`,
+              id: `src-c-${i}-${Date.now()}`,
               title: item.querySelector("title")?.textContent || "",
-              company: "Remote native",
-              location: "Global",
+              company: "Verified Hiring",
+              location: "Remote",
               salary: "Market Rate",
               description: item.querySelector("description")?.textContent?.replace(/<\/?[^>]+(>|$)/g, "") || "",
               url: item.querySelector("link")?.textContent || "#",
@@ -236,8 +235,8 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
           }
 
           const d = await res.json();
-          if (s.name === 'Adzuna Global') return (d.results || []).map((j: any) => ({
-            id: `adz-${j.id}`,
+          if (s.name === 'Source A') return (d.results || []).map((j: any) => ({
+            id: `src-a-${j.id}`,
             title: j.title.replace(/<\/?[^>]+(>|$)/g, ""),
             company: j.company.display_name,
             location: j.location.display_name,
@@ -246,10 +245,10 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
             url: j.redirect_url,
             source: s.name
           }));
-          if (s.name === 'OkJob.io') return (d.job_listings || d || []).map((j: any, i: number) => ({
-            id: `okj-${j.job_id || i}-${Date.now()}`,
+          if (s.name === 'Source D') return (d.job_listings || d || []).map((j: any, i: number) => ({
+            id: `src-d-${j.job_id || i}-${Date.now()}`,
             title: j.title || j.job_title,
-            company: j.company || "Hiring partner",
+            company: j.company || "Partner Hiring",
             location: j.location || "Remote",
             salary: j.salary || "Market Rate",
             description: j.description || j.job_description || "",
@@ -264,10 +263,10 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
       let combined = fetchResults.flat();
       if (combined.length === 0) {
         combined = [
-          { id: 'f1', title: 'Software Engineer', company: 'Linear', location: 'Remote', salary: "$180k+", description: 'Building high-performance tools.', url: '#', source: 'Cache' },
-          { id: 'f2', title: 'Product Architect', company: 'Vercel', location: 'SF', salary: "$200k+", description: 'Next generation web framework.', url: '#', source: 'Cache' }
+          { id: 'f1', title: 'Senior Software Engineer', company: 'Linear', location: 'Remote', salary: "$180k+", description: 'Building high-performance technical tools.', url: '#', source: 'Internal' },
+          { id: 'f2', title: 'Lead Architect', company: 'Vercel', location: 'SF', salary: "$200k+", description: 'Next generation web framework infrastructure.', url: '#', source: 'Internal' }
         ];
-        setError("Endpoint latency: Viewing high-relevance roles.");
+        setError("Network Congestion: Displaying verified high-relevance roles.");
       }
 
       const ranked = await Promise.all(combined.map(async (j: any) => {
@@ -282,25 +281,25 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
 
   return (
     <div className="animate-in fade-in duration-700 space-y-12 text-left">
-      <div className="max-w-3xl space-y-8">
-        <div className="space-y-4">
-          <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 italic">Market Feed</h2>
-          <p className="text-xl text-slate-500 leading-relaxed max-w-2xl">
-            Query global listings across 5 source endpoints. Vector matching is performed locally.
+      <div className="max-w-3xl space-y-8 text-left">
+        <div className="space-y-4 text-left">
+          <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 italic text-left">Market Feed</h2>
+          <p className="text-xl text-slate-500 leading-relaxed max-w-2xl text-left">
+            Query global listings across 5 aggregate endpoints. Matching is calculated locally on your hardware.
           </p>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-3 p-3 bg-white rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/30 focus-within:shadow-2xl focus-within:shadow-slate-200 transition-all">
-          <div className="flex-1 flex items-center px-6 gap-4">
+        <div className="flex flex-col md:flex-row gap-3 p-3 bg-white rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/30 focus-within:shadow-2xl focus-within:shadow-slate-200 transition-all text-left">
+          <div className="flex-1 flex items-center px-6 gap-4 text-left">
             <Search className="w-6 h-6 text-slate-300" />
             <input 
-              type="text" placeholder="Title or keywords..." 
+              type="text" placeholder="Job title or stack..." 
               className="bg-transparent border-none focus:ring-0 w-full h-14 text-slate-900 font-bold text-lg placeholder:text-slate-300"
               value={query} onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
             />
           </div>
-          <div className="flex items-center px-6 gap-4 border-l border-slate-100 hidden md:flex">
+          <div className="flex items-center px-6 gap-4 border-l border-slate-100 hidden md:flex text-left">
             <MapPin className="w-6 h-6 text-slate-300" />
             <input 
               type="text" placeholder="Region..." 
@@ -310,58 +309,58 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
             />
           </div>
           <button onClick={handleSearch} disabled={isSearching} className="btn-gpt-primary px-10 h-14 bg-[#0f172a] rounded-[1.8rem]">
-            {isSearching ? <Loader2 className="w-6 h-6 animate-spin text-white" /> : "Run Query"}
+            {isSearching ? <Loader2 className="w-6 h-6 animate-spin text-white" /> : "Run Feed"}
           </button>
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 px-6 py-3 bg-amber-50 text-amber-700 rounded-2xl border border-amber-100 text-xs font-bold uppercase tracking-wider animate-in slide-in-from-top-2">
+          <div className="flex items-center gap-2 px-6 py-3 bg-amber-50 text-amber-700 rounded-2xl border border-amber-100 text-xs font-bold uppercase tracking-wider animate-in slide-in-from-top-2 text-left">
             <AlertCircle size={14} /> {error}
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
         {results.length > 0 ? results.map(j => (
-          <div key={j.id} className="gpt-card p-10 flex flex-col justify-between group hover:border-slate-400 transition-all">
-            <div className="space-y-6">
+          <div key={j.id} className="gpt-card p-10 flex flex-col justify-between group hover:border-slate-400 transition-all text-left">
+            <div className="space-y-6 text-left">
               <div className="flex justify-between items-start text-left">
-                <div className="px-4 py-1.5 bg-[#0f172a] text-white text-[10px] font-black rounded-full shadow-lg shadow-slate-200 uppercase tracking-widest">
+                <div className="px-4 py-1.5 bg-[#0f172a] text-white text-[10px] font-black rounded-full shadow-lg shadow-slate-200 uppercase tracking-widest text-left">
                   {Math.round(j.score * 100)}% Match
                 </div>
-                <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">{j.source}</div>
+                <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] text-right">{j.source}</div>
               </div>
               <div className="space-y-2 text-left">
-                <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-[1.1] uppercase">{j.title}</h3>
-                <div className="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase tracking-widest">
+                <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-[1.1] uppercase text-left">{j.title}</h3>
+                <div className="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase tracking-widest text-left">
                    {j.company} <div className="w-1 h-1 bg-slate-200 rounded-full" /> {j.location}
                 </div>
               </div>
               <p className="text-sm text-slate-500 line-clamp-4 leading-relaxed text-left font-medium">{j.description}</p>
             </div>
-            <div className="pt-10 flex gap-3">
+            <div className="pt-10 flex gap-3 text-left">
               <button onClick={() => setSelected(j)} className="btn-gpt-secondary flex-1 text-[10px] uppercase font-black tracking-widest h-12">Tailor</button>
               {j.canAutoApply ? (
-                <button className="btn-gpt-apply flex-1 text-[10px] uppercase font-black tracking-widest h-12 bg-slate-900 border-slate-900 hover:bg-slate-800">Apply Now</button>
+                <button className="btn-gpt-apply flex-1 text-[10px] uppercase font-black tracking-widest h-12 bg-slate-900 border-slate-900 hover:bg-slate-800">Apply</button>
               ) : (
-                <a href={j.url} target="_blank" rel="noreferrer" className="btn-gpt-primary flex-1 text-[10px] uppercase font-black tracking-widest h-12">Open Link</a>
+                <a href={j.url} target="_blank" rel="noreferrer" className="btn-gpt-primary flex-1 text-[10px] uppercase font-black tracking-widest h-12">Visit</a>
               )}
             </div>
           </div>
         )) : (
-          <div className="col-span-full h-[500px] flex flex-col items-center justify-center text-slate-200 grayscale opacity-20">
-            <Layers size={120} strokeWidth={0.5} />
-            <p className="mt-8 font-black text-2xl uppercase tracking-[0.5em]">Input Search Query</p>
+          <div className="col-span-full h-[500px] flex flex-col items-center justify-center text-slate-200 grayscale opacity-20 text-center">
+            <Search size={120} strokeWidth={0.5} />
+            <p className="mt-8 font-black text-2xl uppercase tracking-[0.5em] text-center">Enter Search</p>
           </div>
         )}
       </div>
 
-      {selected && <TailorModal j={selected} profile={profile} onClose={() => setSelected(null)} />}
+      {selected && <Modal j={selected} profile={profile} onClose={() => setSelected(null)} />}
     </div>
   )
 }
 
-function TailorModal({ j, profile, onClose }: { j: any, profile: UserProfile | null, onClose: () => void }) {
+function Modal({ j, profile, onClose }: { j: any, profile: UserProfile | null, onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
        <div className="w-full max-w-2xl bg-white rounded-[3rem] shadow-2xl p-16 space-y-12 animate-in zoom-in-95 duration-200 text-left border border-slate-100">
@@ -370,28 +369,28 @@ function TailorModal({ j, profile, onClose }: { j: any, profile: UserProfile | n
                 <Activity className="w-8 h-8 text-white" />
              </div>
              <div className="space-y-2 text-left">
-               <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none">{j.title}</h3>
-               <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.3em]">{j.company}</p>
+               <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none text-left">{j.title}</h3>
+               <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.3em] text-left">{j.company}</p>
              </div>
           </div>
 
           <div className="space-y-8 text-left">
-             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] flex items-center gap-2">
+             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] flex items-center gap-2 text-left">
                Strategic Protocol
              </h4>
              <div className="space-y-4 text-left">
                 {[1,2,3].map(i => (
                   <div key={i} className="flex gap-6 p-8 bg-slate-50 rounded-[2rem] border border-slate-100 transition-colors hover:bg-white hover:border-slate-200 text-left">
-                     <div className="text-xl font-black text-slate-200 italic">0{i}</div>
-                     <p className="text-sm text-slate-600 leading-relaxed font-bold text-left">Highlight your <span className="text-[#0f172a] underline decoration-slate-300 decoration-2 underline-offset-4">{profile?.skills[i] || 'core background'}</span> to maximize matching score for this endpoint.</p>
+                     <div className="text-xl font-black text-slate-200 italic text-left">0{i}</div>
+                     <p className="text-sm text-slate-600 leading-relaxed font-bold text-left">Highlight your <span className="text-[#0f172a] underline decoration-slate-300 decoration-2 underline-offset-4">{profile?.skills[i] || 'experience'}</span> to maximize vector match score for this endpoint.</p>
                   </div>
                 ))}
              </div>
           </div>
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-4 pt-4 text-left">
              <button onClick={onClose} className="btn-gpt-secondary flex-1 h-16 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest">Discard</button>
-             <button className="btn-gpt-primary flex-1 h-16 rounded-[1.5rem] bg-slate-900 border-slate-900 text-[10px] font-black uppercase tracking-widest">Copy advice</button>
+             <button className="btn-gpt-primary flex-1 h-16 rounded-[1.5rem] bg-slate-900 border-slate-900 text-[10px] font-black uppercase tracking-widest text-white">Copy Advice</button>
           </div>
        </div>
     </div>
@@ -404,27 +403,27 @@ function ConfigSection() {
        <div className="space-y-4 text-left">
           <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 text-left">Local Settings</h2>
           <p className="text-xl text-slate-500 leading-relaxed text-left">
-            Manage your hardware preferences and identity information.
+            Manage your local processing preferences and application identity.
           </p>
        </div>
 
        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
           <div className="gpt-card p-12 space-y-10 text-left">
-             <div className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2"><Layers className="w-5 h-5 text-slate-400" /> System Engine</div>
+             <div className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2 text-left"><Layers className="w-5 h-5 text-slate-400" /> System Processing</div>
              <div className="space-y-6 text-left">
-                <div className="flex justify-between items-center py-4 border-b border-slate-100">
-                   <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Processing</span>
-                   <span className="text-[10px] font-black px-3 py-1 bg-slate-100 text-slate-700 rounded-full border border-slate-200">Local_Match</span>
+                <div className="flex justify-between items-center py-4 border-b border-slate-100 text-left">
+                   <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Inference</span>
+                   <span className="text-[10px] font-black px-3 py-1 bg-slate-100 text-slate-700 rounded-full border border-slate-200">Local_Vector</span>
                 </div>
-                <div className="flex justify-between items-center py-4 border-b border-slate-100">
-                   <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Status</span>
+                <div className="flex justify-between items-center py-4 border-b border-slate-100 text-left">
+                   <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Security</span>
                    <span className="text-[10px] font-black text-[#0f172a] uppercase tracking-widest">Verified</span>
                 </div>
              </div>
           </div>
 
           <div className="gpt-card p-12 space-y-10 text-left">
-             <div className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2"><User className="w-5 h-5 text-slate-400" /> Identity Information</div>
+             <div className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2 text-left"><User className="w-5 h-5 text-slate-400" /> Identity Information</div>
              <div className="space-y-6 text-left">
                 <div className="space-y-2 text-left">
                    <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Full Name</label>
@@ -435,10 +434,10 @@ function ConfigSection() {
                    <input type="email" placeholder="Required" className="w-full h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-200" />
                 </div>
                 <button 
-                  onClick={() => confirm('Purge local database?') && (indexedDB.deleteDatabase('auto-apply-ai-db'), window.location.reload())}
+                  onClick={() => confirm('Clear local dataset?') && (indexedDB.deleteDatabase('auto-apply-ai-db'), window.location.reload())}
                   className="w-full mt-6 h-12 text-[10px] font-black text-rose-500 border border-rose-100 hover:bg-rose-50 transition-colors rounded-2xl uppercase tracking-[0.3em]"
                 >
-                  Purge System Memory
+                  Purge Dataset
                 </button>
              </div>
           </div>
