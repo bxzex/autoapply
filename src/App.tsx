@@ -469,6 +469,7 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
   ]
 
   const handleFinalStep = async () => {
+    // Save to local history first
     await saveApplication({
       id: `app-${j.id}-${Date.now()}`,
       jobId: j.id,
@@ -477,9 +478,27 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
       location: j.location,
       url: j.url,
       source: j.source,
-      status: 'applied',
+      status: 'pending',
       appliedAt: Date.now()
     });
+
+    // Initiate Serverless Automation
+    try {
+      await fetch('/api/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobUrl: j.url,
+          firstName: profile?.firstName,
+          lastName: profile?.lastName,
+          email: profile?.email,
+          resumeText: profile?.resumeText
+        })
+      });
+    } catch (err) {
+      console.error('Automation trigger failed:', err);
+    }
+
     onApply();
     onClose();
     window.open(j.url, '_blank');
