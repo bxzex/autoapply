@@ -163,23 +163,28 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
               <CheckCircle2 size={12} /> Local Sync OK
             </span>
           </div>
-          <div className="p-10 grid grid-cols-1 md:grid-cols-[1fr_200px] gap-12 text-left">
-             <div className="space-y-8 text-left">
+          <div className="p-10 space-y-12">
+             <div className="space-y-6 text-left">
                <div className="space-y-4 text-left">
-                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Keywords Extracted</h4>
-                 <div className="flex flex-wrap gap-2.5 text-left">
+                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Keywords Identified</h4>
+                 <div className="flex flex-wrap gap-2 text-left">
                    {profile.skills.map(s => (
-                     <span key={s} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-2xl shadow-sm hover:border-slate-400 transition-all">
+                     <span key={s} className="px-3 py-1 bg-slate-50 border border-slate-200 text-slate-700 text-[11px] font-bold rounded-lg uppercase tracking-tight">
                        {s}
                      </span>
                    ))}
                  </div>
                </div>
-             </div>
-             <div className="bg-[#0f172a] rounded-[2.5rem] p-10 text-white flex flex-col justify-center items-center text-center shadow-xl shadow-slate-200">
-                <div className="text-[10px] font-bold opacity-50 uppercase tracking-[0.3em] mb-4">Match Rank</div>
-                <div className="text-5xl font-black tracking-tighter mb-2">98%</div>
-                <p className="text-[10px] opacity-40 leading-relaxed font-bold uppercase tracking-widest text-center">Verified</p>
+
+               <div className="space-y-4 text-left pt-10 border-t border-slate-100">
+                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Full Dataset Extraction</h4>
+                 <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 max-h-80 overflow-y-auto shadow-inner">
+                    <p className="text-xs text-slate-500 font-mono leading-relaxed whitespace-pre-wrap text-left">
+                      {profile.resumeText}
+                    </p>
+                 </div>
+                 <p className="text-[10px] text-slate-400 italic text-left">Everything shown above has been vectorized locally. The system 'knows' this entire document for matching purposes.</p>
+               </div>
              </div>
           </div>
         </div>

@@ -30,21 +30,25 @@ export function cosineSimilarity(vecA: number[], vecB: number[]) {
 }
 
 export async function extractSkills(text: string) {
-  const commonSkills = [
-    'React', 'TypeScript', 'JavaScript', 'Python', 'Node.js', 'Express',
-    'PostgreSQL', 'MongoDB', 'Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure',
-    'Rust', 'Go', 'Java', 'C++', 'Swift', 'Kotlin', 'Tailwind', 'CSS', 'HTML'
-  ];
-  
-  // Use a simpler search that doesn't trigger "nothing to repeat" errors
+  const categories = {
+    frontend: ['React', 'Next.js', 'Vue', 'Angular', 'Svelte', 'Tailwind', 'CSS', 'HTML', 'JavaScript', 'TypeScript', 'Redux', 'Zustand', 'Vite', 'Webpack', 'Three.js'],
+    backend: ['Node.js', 'Express', 'NestJS', 'Go', 'Golang', 'Rust', 'Python', 'Django', 'Flask', 'FastAPI', 'Java', 'Spring Boot', 'PHP', 'Laravel', 'Ruby on Rails', 'C#', 'ASP.NET', 'C++'],
+    database: ['PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Supabase', 'Firebase', 'Prisma', 'Drizzle', 'Elasticsearch', 'DynamoDB', 'Cassandra'],
+    cloud: ['AWS', 'Azure', 'GCP', 'Google Cloud', 'Docker', 'Kubernetes', 'Terraform', 'Ansible', 'Lambda', 'EC2', 'S3', 'Vercel', 'Netlify', 'Cloudflare'],
+    tools: ['Git', 'GitHub', 'GitLab', 'CI/CD', 'Jenkins', 'Jira', 'Figma', 'Agile', 'Scrum', 'Linux', 'Bash', 'Prompt Engineering', 'LLM', 'LangChain'],
+    mobile: ['React Native', 'Flutter', 'Swift', 'Kotlin', 'Android', 'iOS', 'Expo']
+  };
+
+  const allSkills = Object.values(categories).flat();
   const lowerText = text.toLowerCase();
-  return commonSkills.filter(skill => {
+  
+  const found = allSkills.filter(skill => {
     const s = skill.toLowerCase();
-    // Check for exact word or handle special cases like C++
-    if (s.includes('+') || s.includes('.')) {
-      return lowerText.includes(s);
-    }
+    if (s.includes('+') || s.includes('.')) return lowerText.includes(s);
     const regex = new RegExp(`\\b${s}\\b`, 'i');
     return regex.test(lowerText);
   });
+
+  // Remove duplicates and return unique list
+  return Array.from(new Set(found));
 }
