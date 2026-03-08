@@ -1,6 +1,6 @@
 import { openDB, IDBPDatabase } from 'idb';
 
-const DB_NAME = 'auto-apply-ai-db';
+const DB_NAME = 'auto-apply-db';
 const PROFILE_STORE = 'profile';
 const APPS_STORE = 'applications';
 

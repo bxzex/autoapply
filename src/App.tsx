@@ -748,7 +748,7 @@ function ConfigSection({ profile, onProfileUpdate }: { profile: UserProfile | nu
                     {isSaving ? "Saving..." : "Save Identity"}
                   </button>
                   <button 
-                    onClick={() => confirm('Reset all local data?') && (indexedDB.deleteDatabase('auto-apply-ai-db'), window.location.reload())}
+                    onClick={() => confirm('Reset all local data?') && (indexedDB.deleteDatabase('auto-apply-db'), window.location.reload())}
                     className="w-full h-12 text-[10px] font-black text-rose-500 border border-rose-100 hover:bg-rose-50 transition-colors rounded-2xl uppercase tracking-[0.3em]"
                   >
                     Reset Profile Data

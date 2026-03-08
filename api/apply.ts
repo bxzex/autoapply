@@ -1,9 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import chromium from '@sparticuz/chromium';
-import { chromium as playwright } from 'playwright-core';
-import path from 'path';
+import chromium from '@sparticuz/chromium-min';
+import puppeteer from 'puppeteer-core';
 
-export const maxDuration = 60; // 60s for Hobby tier
+export const maxDuration = 60; 
 
 export default async function handler(
   request: VercelRequest,
@@ -13,7 +12,7 @@ export default async function handler(
     return response.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { jobUrl, firstName, lastName, email, resumeText } = request.body;
+  const { jobUrl, firstName, lastName, email } = request.body;
 
   if (!jobUrl) {
     return response.status(400).json({ error: 'Missing jobUrl' });
@@ -21,73 +20,46 @@ export default async function handler(
 
   let browser = null;
   try {
-    // 1. Initialize Headless Browser (optimized for Vercel/Lambda)
-    const executablePath = await chromium.executablePath();
-    
-    // Fix for missing libnss3.so / libnspr4.so on Vercel
-    if (process.env.VERCEL) {
-      const execDir = path.dirname(executablePath);
-      process.env.LD_LIBRARY_PATH = `${execDir}:${process.env.LD_LIBRARY_PATH || ""}`;
-    }
+    // 1. Setup Robust Browser Bridge
+    const executablePath = await chromium.executablePath(
+      'https://github.com/Sparticuz/chromium/releases/download/v132.0.0/chromium-v132.0.0-pack.tar'
+    );
 
-    // Sometimes chromium is busy being extracted/prepared
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    browser = await playwright.launch({
-      args: [...chromium.args, "--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu"],
+    browser = await puppeteer.launch({
+      args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
+      defaultViewport: chromium.defaultViewport,
       executablePath,
-      headless: !!chromium.headless,
+      headless: chromium.headless,
     });
 
-    const context = await browser.newContext({
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-    });
+    const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
 
-    const page = await context.newPage();
-
-    // 2. Navigate to Job URL (No-Wait Strategy)
+    // 2. Navigation Protocol
     await page.goto(jobUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
-    // 3. Automation: Find and fill common fields (Example logic)
-    // In a real scenario, this would be customized for major platforms (Workday, Greenhouse, etc.)
+    // 3. Automated Form Preparation
     try {
-      if (firstName) {
-        await page.fill('input[name*="first"], input[name*="given"]', firstName).catch(() => null);
-      }
-      if (lastName) {
-        await page.fill('input[name*="last"], input[name*="family"]', lastName).catch(() => null);
-      }
-      if (email) {
-        await page.fill('input[type="email"], input[name*="email"]', email).catch(() => null);
-      }
-      
-      // Resume Upload Field Logic
-      // Usually <input type="file">. We can't easily upload a Uint8Array from serverless 
-      // unless we write it to a temp file or the site accepts drag-and-drop.
-      // For now, we simulate finding the field.
-      const fileInput = await page.$('input[type="file"]');
-      if (fileInput) {
-         // Logic to handle actual upload would go here
-      }
-
+      if (firstName) await page.type('input[name*="first"], input[name*="given"]', firstName).catch(() => null);
+      if (lastName) await page.type('input[name*="last"], input[name*="family"]', lastName).catch(() => null);
+      if (email) await page.type('input[type="email"], input[name*="email"]', email).catch(() => null);
     } catch (err) {
-      console.warn('Filling failed, site might be non-standard:', err);
+      console.warn('Protocol Injection Error:', err);
     }
 
-    // 4. Capture Progress Screenshot
-    const screenshot = await page.screenshot({ type: 'jpeg', quality: 60 });
-    const base64Screenshot = screenshot.toString('base64');
+    // 4. Capture Visual Telemetry
+    const screenshot = await page.screenshot({ type: 'jpeg', quality: 50 });
+    const base64Screenshot = (screenshot as Buffer).toString('base64');
 
-    // 5. Return success with the screenshot
     return response.status(200).json({ 
       status: 'success', 
-      message: 'Automation initiated. Data prepared on portal.',
+      message: 'Protocol initialized.',
       jobUrl,
       screenshot: base64Screenshot
     });
 
   } catch (error: any) {
-    console.error('Automation error:', error);
+    console.error('Automation Bridge Critical Failure:', error);
     return response.status(500).json({ error: error.message });
   } finally {
     if (browser) {
