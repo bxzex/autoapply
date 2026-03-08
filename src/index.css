@@ -2,51 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --bg: #000000;
+    --border: #1a1a1a;
+    --text-muted: #666666;
+    --accent: #ffffff;
+  }
+
+  body {
+    @apply bg-black text-white antialiased selection:bg-white selection:text-black;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+}
+
 @layer components {
-  .tab-trigger {
-    @apply flex items-center gap-2 px-4 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-widest text-[#666] transition-all hover:text-[#ededed];
+  .cell-border {
+    @apply border border-[#1a1a1a];
   }
   
-  .tab-trigger.active {
-    @apply text-[#ededed] bg-[#161616] border border-[#1f1f1f];
+  .mono-label {
+    @apply font-mono text-[10px] tracking-tighter uppercase text-[#666];
   }
 
-  .action-btn-primary {
-    @apply h-10 px-6 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-sm hover:bg-[#ededed] transition-colors whitespace-nowrap;
+  .nav-item {
+    @apply px-4 py-2 text-[11px] font-medium tracking-tight text-[#666] transition-colors hover:text-white;
   }
 
-  .action-btn-secondary {
-    @apply h-10 px-6 border border-[#1f1f1f] text-[#ededed] text-[10px] font-black uppercase tracking-widest rounded-sm hover:bg-white/5 transition-colors whitespace-nowrap;
+  .nav-item.active {
+    @apply text-white border-b-2 border-white;
+  }
+
+  .btn-primary {
+    @apply bg-white text-black px-4 py-2 text-[11px] font-bold uppercase tracking-wider hover:bg-[#ccc] transition-colors;
+  }
+
+  .btn-secondary {
+    @apply border border-[#1a1a1a] text-white px-4 py-2 text-[11px] font-bold uppercase tracking-wider hover:bg-[#111] transition-colors;
   }
 }
 
-:root {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #050505;
-  color: #ededed;
-  -webkit-font-smoothing: antialiased;
-}
-
-body {
-  margin: 0;
-  overflow-x: hidden;
-}
-
-#root {
-  width: 100%;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #050505;
-}
-::-webkit-scrollbar-thumb {
-  background: #1f1f1f;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #333;
+/* Grain Effect */
+.bg-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Cfilter id='noiseFilter'%3%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3%3C/filter%3%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3%3C/svg%3");
+  opacity: 0.03;
+  pointer-events: none;
 }
