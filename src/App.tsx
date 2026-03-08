@@ -15,6 +15,7 @@ import {
   ChevronRight,
   MapPin,
   Briefcase,
+  Activity,
   Layers,
   AlertCircle,
   Clock,
