@@ -19,7 +19,8 @@ import {
   Activity,
   Zap,
   Sparkles,
-  X
+  X,
+  Heart
 } from 'lucide-react'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -81,7 +82,16 @@ function App() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="px-3 py-1 rounded-full text-[10px] font-bold tracking-tight border bg-white text-slate-500 border-slate-200 flex items-center gap-2 uppercase">
+            <a 
+              href="https://buy.stripe.com/9B6eVfd9E6OC3sr7cEaAw03" 
+              target="_blank" 
+              rel="noreferrer"
+              className="px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest bg-rose-50 text-rose-500 border border-rose-100 flex items-center gap-2 uppercase hover:bg-rose-500 hover:text-white transition-all shadow-sm shadow-rose-100 active:scale-95"
+            >
+              <Heart size={12} fill="currentColor" />
+              Support Project
+            </a>
+            <div className="px-3 py-1.5 rounded-full text-[10px] font-bold tracking-tight border bg-white text-slate-500 border-slate-200 flex items-center gap-2 uppercase">
               <div className="w-1 h-1 rounded-full bg-emerald-500" />
               Service Online
             </div>
