@@ -24,17 +24,18 @@ import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { extractTextFromPDF } from './lib/pdf'
 import { getEmbedding, extractSkills, cosineSimilarity } from './lib/ml'
-import { saveProfile, getProfile, type UserProfile } from './lib/db'
+import { saveProfile, getProfile, saveApplication, getApplications, type UserProfile, type JobApplication } from './lib/db'
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'profile' | 'search' | 'config'>(() => {
+  const [activeTab, setActiveTab] = useState<'profile' | 'search' | 'history' | 'config'>(() => {
     return (localStorage.getItem('activeTab') as any) || 'profile';
   })
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [applications, setApplications] = useState<JobApplication[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -42,8 +43,9 @@ function App() {
   }, [activeTab]);
 
   useEffect(() => {
-    getProfile().then(data => {
-      if (data) setProfile(data)
+    Promise.all([getProfile(), getApplications()]).then(([p, a]) => {
+      if (p) setProfile(p)
+      if (a) setApplications(a)
       setLoading(false)
     })
   }, [])
@@ -69,6 +71,9 @@ function App() {
             <button onClick={() => setActiveTab('search')} className={cn("nav-link", activeTab === 'search' && "active")}>
               Listings
             </button>
+            <button onClick={() => setActiveTab('history')} className={cn("nav-link", activeTab === 'history' && "active")}>
+              Applications
+            </button>
             <button onClick={() => setActiveTab('config')} className={cn("nav-link", activeTab === 'config' && "active")}>
               Settings
             </button>
@@ -85,7 +90,8 @@ function App() {
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-12">
         {activeTab === 'profile' && <ProfileSection profile={profile} onProfileUpdate={(p) => (setProfile(p), saveProfile(p))} />}
-        {activeTab === 'search' && <SearchSection profile={profile} />}
+        {activeTab === 'search' && <SearchSection profile={profile} onApply={() => getApplications().then(setApplications)} />}
+        {activeTab === 'history' && <HistorySection applications={applications} />}
         {activeTab === 'config' && <ConfigSection profile={profile} onProfileUpdate={(p) => (setProfile(p), saveProfile(p))} />}
       </main>
 
@@ -246,7 +252,7 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
   )
 }
 
-function SearchSection({ profile }: { profile: UserProfile | null }) {
+function SearchSection({ profile, onApply }: { profile: UserProfile | null, onApply: () => void }) {
   const [query, setQuery] = useState('')
   const [location, setLocation] = useState('')
   const [results, setResults] = useState<any[]>([])
@@ -378,12 +384,71 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
       </div>
 
       {selected && <Modal j={selected} profile={profile} onClose={() => setSelected(null)} />}
-      {applyingJob && <ApplyModal j={applyingJob} profile={profile} onClose={() => setApplyingJob(null)} />}
+      {applyingJob && <ApplyModal j={applyingJob} profile={profile} onApply={onApply} onClose={() => setApplyingJob(null)} />}
     </div>
   )
 }
 
-function ApplyModal({ j, profile, onClose }: { j: any, profile: UserProfile | null, onClose: () => void }) {
+function HistorySection({ applications }: { applications: JobApplication[] }) {
+  return (
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-12 text-left">
+       <div className="space-y-4 text-left">
+          <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 text-left">Application History</h2>
+          <p className="text-xl text-slate-500 leading-relaxed text-left">
+            Track all the roles you've engaged with through the system.
+          </p>
+       </div>
+
+       <div className="gpt-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-slate-50/50">
+                <tr>
+                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Job Title</th>
+                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Company</th>
+                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Date</th>
+                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
+                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Source</th>
+                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {applications.length > 0 ? applications.sort((a,b) => b.appliedAt - a.appliedAt).map((app) => (
+                  <tr key={app.id} className="hover:bg-slate-50/30 transition-colors">
+                    <td className="px-8 py-6">
+                      <div className="font-bold text-slate-900 text-sm">{app.title}</div>
+                      <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{app.location}</div>
+                    </td>
+                    <td className="px-8 py-6 text-sm font-bold text-slate-600">{app.company}</td>
+                    <td className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase">
+                      {new Date(app.appliedAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black rounded-full uppercase tracking-widest border border-emerald-100">
+                        {app.status}
+                      </span>
+                    </td>
+                    <td className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{app.source}</td>
+                    <td className="px-8 py-6">
+                      <a href={app.url} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors">
+                        <ExternalLink size={16} />
+                      </a>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={6} className="px-8 py-20 text-center text-slate-300 italic text-sm">No applications recorded yet.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+       </div>
+    </div>
+  )
+}
+
+function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserProfile | null, onApply: () => void, onClose: () => void }) {
   const [step, setStep] = useState(0)
   const [isDone, setIsDone] = useState(false)
 
@@ -402,6 +467,23 @@ function ApplyModal({ j, profile, onClose }: { j: any, profile: UserProfile | nu
     "Preparing secure portal...",
     "Ready for final submission"
   ]
+
+  const handleFinalStep = async () => {
+    await saveApplication({
+      id: `app-${j.id}-${Date.now()}`,
+      jobId: j.id,
+      title: j.title,
+      company: j.company,
+      location: j.location,
+      url: j.url,
+      source: j.source,
+      status: 'applied',
+      appliedAt: Date.now()
+    });
+    onApply();
+    onClose();
+    window.open(j.url, '_blank');
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-500">
@@ -438,15 +520,12 @@ function ApplyModal({ j, profile, onClose }: { j: any, profile: UserProfile | nu
 
           {isDone && (
             <div className="animate-in slide-in-from-bottom-4 duration-500 pt-4">
-              <a 
-                href={j.url} 
-                target="_blank" 
-                rel="noreferrer"
-                onClick={onClose}
+              <button 
+                onClick={handleFinalStep}
                 className="w-full h-20 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[1.5rem] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.3em] shadow-xl shadow-emerald-200 transition-all active:scale-95"
               >
                 Go to Final Step <ExternalLink size={18} />
-              </a>
+              </button>
               <p className="mt-6 text-[10px] text-slate-400 font-bold text-center leading-relaxed">
                 Your name ({profile?.firstName} {profile?.lastName}) and Resume are prepared. <br/>Simply paste or upload when the portal opens.
               </p>
@@ -587,10 +666,10 @@ function ConfigSection({ profile, onProfileUpdate }: { profile: UserProfile | nu
                     {isSaving ? "Saving..." : "Save Identity"}
                   </button>
                   <button 
-                    onClick={() => confirm('Purge dataset?') && (indexedDB.deleteDatabase('auto-apply-ai-db'), window.location.reload())}
+                    onClick={() => confirm('Reset all local data?') && (indexedDB.deleteDatabase('auto-apply-ai-db'), window.location.reload())}
                     className="w-full h-12 text-[10px] font-black text-rose-500 border border-rose-100 hover:bg-rose-50 transition-colors rounded-2xl uppercase tracking-[0.3em]"
                   >
-                    Purge Dataset
+                    Reset Profile Data
                   </button>
                 </div>
              </div>
