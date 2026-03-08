@@ -6,6 +6,8 @@ const STORE_NAME = 'profile';
 export interface UserProfile {
   id: string;
   name: string;
+  fullName?: string;
+  email?: string;
   resumeText: string;
   skills: string[];
   embedding: number[];

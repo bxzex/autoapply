@@ -71,7 +71,7 @@ function App() {
           <div className="flex items-center gap-3">
             <div className="px-3 py-1 rounded-full text-[10px] font-bold tracking-tight border bg-white text-slate-500 border-slate-200 flex items-center gap-2 uppercase">
               <div className="w-1 h-1 rounded-full bg-emerald-500" />
-              Service_Online
+              Service Online
             </div>
           </div>
         </div>
@@ -80,7 +80,7 @@ function App() {
       <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-12">
         {activeTab === 'profile' && <ProfileSection profile={profile} onProfileUpdate={(p) => (setProfile(p), saveProfile(p))} />}
         {activeTab === 'search' && <SearchSection profile={profile} />}
-        {activeTab === 'config' && <ConfigSection />}
+        {activeTab === 'config' && <ConfigSection profile={profile} onProfileUpdate={(p) => (setProfile(p), saveProfile(p))} />}
       </main>
 
       <footer className="border-t border-slate-200 bg-white py-16">
@@ -204,6 +204,7 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
   const handleSearch = async () => {
     if (!query) return;
     setIsSearching(true);
+    setResults([]);
     setError(null);
     try {
       const queryEmbedding = await getEmbedding(query);
@@ -217,15 +218,31 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
         combined = await res.json();
       } else {
         setError("Network error: Could not reach job sources.");
+        setIsSearching(false);
+        return;
+      }
+
+      if (combined.length === 0) {
+        setError("No listings found for your query. Try a broader search.");
+        setIsSearching(false);
+        return;
       }
 
       const ranked = await Promise.all(combined.map(async (j: any) => {
-        const jE = await getEmbedding(j.description + ' ' + j.title)
-        let score = cosineSimilarity(queryEmbedding, jE)
-        if (profile) score = (score * 0.4) + (cosineSimilarity(profile.embedding, jE) * 0.6)
-        return { ...j, score }
+        try {
+          const jE = await getEmbedding(j.description + ' ' + j.title)
+          let score = cosineSimilarity(queryEmbedding, jE)
+          if (profile) score = (score * 0.4) + (cosineSimilarity(profile.embedding, jE) * 0.6)
+          return { ...j, score }
+        } catch (err) {
+          console.error('Embedding error for job:', j.id, err);
+          return { ...j, score: 0 };
+        }
       }))
       setResults(ranked.sort((a, b) => b.score - a.score))
+    } catch (err) {
+      console.error('Search error:', err);
+      setError("An unexpected error occurred during processing.");
     } finally { setIsSearching(false); }
   }
 
@@ -347,7 +364,20 @@ function Modal({ j, profile, onClose }: { j: any, profile: UserProfile | null, o
   )
 }
 
-function ConfigSection() {
+function ConfigSection({ profile, onProfileUpdate }: { profile: UserProfile | null, onProfileUpdate: (p: UserProfile) => void }) {
+  const [fullName, setFullName] = useState(profile?.fullName || '')
+  const [email, setEmail] = useState(profile?.email || '')
+  const [isSaving, setIsSaving] = useState(false)
+
+  const handleSave = async () => {
+    if (!profile) return;
+    setIsSaving(true);
+    try {
+      await onProfileUpdate({ ...profile, fullName, email, updatedAt: Date.now() });
+      alert('Settings saved!');
+    } finally { setIsSaving(false); }
+  }
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-3xl space-y-16 text-left">
        <div className="space-y-4 text-left">
@@ -363,7 +393,7 @@ function ConfigSection() {
              <div className="space-y-6 text-left">
                 <div className="flex justify-between items-center py-4 border-b border-slate-100 text-left">
                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Engine</span>
-                   <span className="text-[10px] font-black px-3 py-1 bg-slate-100 text-slate-700 rounded-full border border-slate-200">Verified_Local</span>
+                   <span className="text-[10px] font-black px-3 py-1 bg-slate-100 text-slate-700 rounded-full border border-slate-200">Verified Local</span>
                 </div>
                 <div className="flex justify-between items-center py-4 border-b border-slate-100 text-left">
                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Security</span>
@@ -377,18 +407,40 @@ function ConfigSection() {
              <div className="space-y-6 text-left">
                 <div className="space-y-2 text-left">
                    <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-left">Full Name</label>
-                   <input type="text" placeholder="Required" className="w-full h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-200" />
+                   <input 
+                    type="text" 
+                    placeholder="Required" 
+                    className="w-full h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-200"
+                    value={fullName}
+                    onChange={e => setFullName(e.target.value)}
+                   />
                 </div>
                 <div className="space-y-2 text-left">
                    <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-left">Email Address</label>
-                   <input type="email" placeholder="Required" className="w-full h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-200" />
+                   <input 
+                    type="email" 
+                    placeholder="Required" 
+                    className="w-full h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-200"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                   />
                 </div>
-                <button 
-                  onClick={() => confirm('Purge dataset?') && (indexedDB.deleteDatabase('auto-apply-ai-db'), window.location.reload())}
-                  className="w-full mt-6 h-12 text-[10px] font-black text-rose-500 border border-rose-100 hover:bg-rose-50 transition-colors rounded-2xl uppercase tracking-[0.3em]"
-                >
-                  Purge Dataset
-                </button>
+                
+                <div className="flex flex-col gap-3 pt-4">
+                  <button 
+                    onClick={handleSave}
+                    disabled={isSaving || !profile}
+                    className="w-full h-12 text-[10px] font-black text-white bg-slate-900 hover:bg-slate-800 transition-colors rounded-2xl uppercase tracking-[0.3em] disabled:opacity-50"
+                  >
+                    {isSaving ? "Saving..." : "Save Identity"}
+                  </button>
+                  <button 
+                    onClick={() => confirm('Purge dataset?') && (indexedDB.deleteDatabase('auto-apply-ai-db'), window.location.reload())}
+                    className="w-full h-12 text-[10px] font-black text-rose-500 border border-rose-100 hover:bg-rose-50 transition-colors rounded-2xl uppercase tracking-[0.3em]"
+                  >
+                    Purge Dataset
+                  </button>
+                </div>
              </div>
           </div>
        </div>
