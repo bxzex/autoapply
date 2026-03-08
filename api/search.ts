@@ -80,13 +80,5 @@ export default async function handler(
 
   const combined = results.flat();
 
-  // If live results fail, inject high-quality simulation data so the app never feels broken
-  if (combined.length < 3) {
-    combined.push(
-      { id: `sim-1-${ts}`, title: "Senior Systems Engineer", company: "Linear", location: "Remote", salary: "$180k+", description: "Building high-performance tools for engineers. Focus on speed and efficiency.", url: "https://linear.app/jobs", source: "Market Pulse" },
-      { id: `sim-2-${ts}`, title: "Lead Frontend Architect", company: "Vercel", location: "Remote", salary: "$200k+", description: "Evolving the future of the web infrastructure. React and Next.js expertise.", url: "https://vercel.com/jobs", source: "Market Pulse" }
-    );
-  }
-
   return response.status(200).json(combined);
 }

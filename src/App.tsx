@@ -211,11 +211,7 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
       if (res && res.ok) {
         combined = await res.json();
       } else {
-        combined = [
-          { id: 'f1', title: 'Full Stack Developer', company: 'Linear', location: 'Remote', salary: "$180k+", description: 'Engineering functional systems.', url: '#', source: 'Internal' },
-          { id: 'f2', title: 'Product Architect', company: 'Vercel', location: 'Remote', salary: "$200k+", description: 'Building the next web framework.', url: '#', source: 'Internal' }
-        ];
-        setError("Endpoint timeout: Displaying verified cache.");
+        setError("Network error: Could not reach job sources.");
       }
 
       const ranked = await Promise.all(combined.map(async (j: any) => {
