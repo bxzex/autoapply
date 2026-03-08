@@ -112,6 +112,15 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => {
+    if (profile?.resumeFile && !pdfUrl) {
+      const blob = new Blob([profile.resumeFile], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [profile?.resumeFile])
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
