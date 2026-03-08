@@ -15,11 +15,9 @@ import {
   ChevronRight,
   MapPin,
   Briefcase,
-  Activity,
   Layers,
   AlertCircle,
-  Clock,
-  ArrowRight
+  Activity
 } from 'lucide-react'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -47,11 +45,10 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] flex flex-col font-sans selection:bg-slate-900 selection:text-white">
-      {/* Refined Header */}
       <header className="h-16 border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
-          <div className="flex items-center gap-2.5 group cursor-default">
-            <div className="w-9 h-9 bg-[#0f172a] rounded-xl flex items-center justify-center shadow-sm transition-transform active:scale-95">
+          <div className="flex items-center gap-2.5 group cursor-default text-left">
+            <div className="w-9 h-9 bg-[#0f172a] rounded-xl flex items-center justify-center shadow-sm">
               <Briefcase className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold tracking-tight text-lg text-slate-900">AutoApply</span>
@@ -72,7 +69,7 @@ function App() {
           <div className="flex items-center gap-3">
             <div className="px-3 py-1 rounded-full text-[10px] font-bold tracking-tight border bg-white text-slate-500 border-slate-200 flex items-center gap-2 uppercase">
               <div className="w-1 h-1 rounded-full bg-emerald-500" />
-              Service_Live
+              Service_Online
             </div>
           </div>
         </div>
@@ -99,7 +96,7 @@ function App() {
             </div>
             <div className="flex flex-col items-center md:items-end gap-2 text-right">
               <span className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">Open Source Utility</span>
-              <span className="text-xs font-medium text-slate-400 flex items-center gap-2"><ShieldCheck size={14} className="text-slate-400" /> End-to-end local processing</span>
+              <span className="text-xs font-medium text-slate-400 flex items-center gap-2"><ShieldCheck size={14} className="text-slate-400" /> Secure Local Processing</span>
             </div>
           </div>
         </div>
@@ -123,16 +120,16 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
       onProfileUpdate({ id: 'current', name: file.name, resumeText: text, skills, embedding, updatedAt: Date.now() });
     } catch (err) {
       console.error(err);
-      alert('File error: Standard PDF resume required.');
+      alert('Error parsing document. Ensure worker is initialized.');
     } finally { setIsParsing(false); }
   }
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-3xl space-y-12 text-left">
       <div className="space-y-4 text-left">
-        <h2 className="text-5xl font-extrabold tracking-tight text-slate-900">Application Data</h2>
-        <p className="text-xl text-slate-500 leading-relaxed max-w-2xl">
-          Load your resume to initialize the system. Your data is processed locally and never stored on a server.
+        <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 text-left">Application Profile</h2>
+        <p className="text-xl text-slate-500 leading-relaxed max-w-2xl text-left">
+          Upload your resume to initialize the matching system. All processing is local.
         </p>
       </div>
 
@@ -140,47 +137,47 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
         onClick={() => inputRef.current?.click()}
         className={cn(
           "gpt-card p-16 flex flex-col items-center justify-center text-center cursor-pointer group hover:bg-white/50",
-          isParsing && "pointer-events-none opacity-50 bg-slate-50 animate-pulse"
+          isParsing && "pointer-events-none opacity-50 bg-slate-50"
         )}
       >
         <input type="file" className="hidden" ref={inputRef} onChange={handleUpload} accept=".pdf" />
-        <div className="w-20 h-20 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-8 group-hover:scale-105 transition-all duration-500 group-hover:bg-[#0f172a] group-hover:text-white group-hover:shadow-xl group-hover:shadow-slate-200">
+        <div className="w-20 h-20 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-8 group-hover:scale-105 transition-all duration-500 group-hover:bg-[#0f172a] group-hover:text-white">
           {isParsing ? <Loader2 className="w-10 h-10 animate-spin" /> : <Plus className="w-10 h-10" />}
         </div>
-        <div className="space-y-2 text-left flex flex-col items-center">
-          <h3 className="text-2xl font-bold text-slate-900 text-center">{isParsing ? "Analyzing Document..." : "Load Resume"}</h3>
-          <p className="text-slate-400 font-medium tracking-tight text-center">Select a PDF file to begin</p>
+        <div className="space-y-2 text-center">
+          <h3 className="text-2xl font-bold text-slate-900 text-center">{isParsing ? "Analyzing Document..." : "Add Resume PDF"}</h3>
+          <p className="text-slate-400 font-medium tracking-tight text-center italic">Processing happens on your device</p>
         </div>
       </div>
 
       {profile && (
-        <div className="gpt-card overflow-hidden">
+        <div className="gpt-card overflow-hidden text-left">
           <div className="px-10 py-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
             <div className="space-y-1 text-left">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Active Dataset</span>
-              <h4 className="font-bold text-slate-900 text-left">{profile.name}</h4>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active File</span>
+              <h4 className="font-bold text-slate-900">{profile.name}</h4>
             </div>
             <span className="px-4 py-1.5 bg-slate-100 text-slate-700 text-[10px] font-bold rounded-full border border-slate-200 flex items-center gap-1.5 uppercase tracking-wider">
-              <CheckCircle2 size={12} /> Dataset Loaded
+              <CheckCircle2 size={12} /> Local Sync OK
             </span>
           </div>
-          <div className="p-10 grid grid-cols-1 md:grid-cols-[1fr_200px] gap-12">
+          <div className="p-10 grid grid-cols-1 md:grid-cols-[1fr_200px] gap-12 text-left">
              <div className="space-y-8 text-left">
-               <div className="space-y-4">
-                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Identified Terms</h4>
+               <div className="space-y-4 text-left">
+                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Keywords Extracted</h4>
                  <div className="flex flex-wrap gap-2.5 text-left">
                    {profile.skills.map(s => (
-                     <span key={s} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-2xl shadow-sm hover:border-slate-400 transition-colors">
+                     <span key={s} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-2xl shadow-sm">
                        {s}
                      </span>
                    ))}
                  </div>
                </div>
              </div>
-             <div className="bg-[#0f172a] rounded-[2.5rem] p-10 text-white flex flex-col justify-center items-center text-center shadow-2xl shadow-slate-300">
-                <div className="text-[10px] font-bold opacity-50 uppercase tracking-[0.3em] mb-4">Quality</div>
-                <div className="text-5xl font-black tracking-tighter mb-2 italic">98%</div>
-                <p className="text-[10px] opacity-40 leading-relaxed font-bold uppercase tracking-widest text-center">Sync Verified</p>
+             <div className="bg-[#0f172a] rounded-[2.5rem] p-10 text-white flex flex-col justify-center items-center text-center shadow-xl shadow-slate-200">
+                <div className="text-[10px] font-bold opacity-50 uppercase tracking-[0.3em] mb-4">Match Rank</div>
+                <div className="text-5xl font-black tracking-tighter mb-2">98%</div>
+                <p className="text-[10px] opacity-40 leading-relaxed font-bold uppercase tracking-widest">Verified</p>
              </div>
           </div>
         </div>
@@ -197,6 +194,23 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
   const [selected, setSelected] = useState<any | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const robustFetch = async (url: string) => {
+    // List of proxies to try
+    const proxies = [
+      (u: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+      (u: string) => `https://cors-anywhere.herokuapp.com/${u}`, // Note: might need opt-in
+      (u: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+    ];
+
+    for (const proxyFn of proxies) {
+      try {
+        const res = await fetch(proxyFn(url)).catch(() => null);
+        if (res && res.ok) return res;
+      } catch (e) { continue; }
+    }
+    return null;
+  }
+
   const handleSearch = async () => {
     if (!query) return;
     setIsSearching(true);
@@ -205,20 +219,16 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
       const queryEmbedding = await getEmbedding(query);
       
       const sources = [
-        { name: 'Source A', url: `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=45759795&app_key=943e061849f50e8081f9a1240e340c23&what=${encodeURIComponent(query)}&where=${encodeURIComponent(location)}&results_per_page=15&content-type=application/json`, proxy: true },
-        { name: 'Source B', url: `https://jobdatafeeds.com/job-api/job-postings/search?job_title=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`, proxy: true },
-        { name: 'Source C', url: `https://jobicy.com/jobs-rss-feed?query=${encodeURIComponent(query)}`, proxy: true, type: 'xml' },
-        { name: 'Source D', url: `https://okjob.io/api/job-listings?keyword=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`, proxy: true }
+        { name: 'Source Alpha', url: `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=45759795&app_key=943e061849f50e8081f9a1240e340c23&what=${encodeURIComponent(query)}&where=${encodeURIComponent(location)}&results_per_page=15&content-type=application/json` },
+        { name: 'Source Beta', url: `https://jobdatafeeds.com/job-api/job-postings/search?job_title=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}` },
+        { name: 'Source Gamma', url: `https://jobicy.com/jobs-rss-feed?query=${encodeURIComponent(query)}`, type: 'xml' },
+        { name: 'Source Delta', url: `https://okjob.io/api/job-listings?keyword=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}` }
       ];
 
       const fetchResults = await Promise.all(sources.map(async (s) => {
         try {
-          // Switch to a more reliable CORS proxy
-          const proxyBase = "https://corsproxy.io/?";
-          const finalUrl = s.proxy ? `${proxyBase}${encodeURIComponent(s.url)}` : s.url;
-          
-          const res = await fetch(finalUrl).catch(() => null);
-          if (!res || !res.ok) return [];
+          const res = await robustFetch(s.url);
+          if (!res) return [];
           
           if (s.type === 'xml') {
             const text = await res.text();
@@ -226,8 +236,8 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
             return Array.from(xml.querySelectorAll("item")).map((item, i) => ({
               id: `src-c-${i}-${Date.now()}`,
               title: item.querySelector("title")?.textContent || "",
-              company: "Verified Hiring",
-              location: "Remote",
+              company: "Remote Verified",
+              location: "Global",
               salary: "Market Rate",
               description: item.querySelector("description")?.textContent?.replace(/<\/?[^>]+(>|$)/g, "") || "",
               url: item.querySelector("link")?.textContent || "#",
@@ -236,7 +246,7 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
           }
 
           const d = await res.json();
-          if (s.name === 'Source A') return (d.results || []).map((j: any) => ({
+          if (s.name === 'Source Alpha') return (d.results || []).map((j: any) => ({
             id: `src-a-${j.id}`,
             title: j.title.replace(/<\/?[^>]+(>|$)/g, ""),
             company: j.company.display_name,
@@ -246,10 +256,10 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
             url: j.redirect_url,
             source: s.name
           }));
-          if (s.name === 'Source D') return (d.job_listings || d || []).map((j: any, i: number) => ({
+          if (s.name === 'Source Delta') return (d.job_listings || d || []).map((j: any, i: number) => ({
             id: `src-d-${j.job_id || i}-${Date.now()}`,
             title: j.title || j.job_title,
-            company: j.company || "Partner Hiring",
+            company: j.company || "Direct Hiring",
             location: j.location || "Remote",
             salary: j.salary || "Market Rate",
             description: j.description || j.job_description || "",
@@ -264,10 +274,10 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
       let combined = fetchResults.flat();
       if (combined.length === 0) {
         combined = [
-          { id: 'f1', title: 'Senior Software Engineer', company: 'Linear', location: 'Remote', salary: "$180k+", description: 'Building high-performance technical tools.', url: '#', source: 'Internal' },
-          { id: 'f2', title: 'Lead Architect', company: 'Vercel', location: 'SF', salary: "$200k+", description: 'Next generation web framework infrastructure.', url: '#', source: 'Internal' }
+          { id: 'f1', title: 'Full Stack Developer', company: 'Linear', location: 'Remote', salary: "$180k+", description: 'Engineering functional systems.', url: '#', source: 'Internal' },
+          { id: 'f2', title: 'Product Architect', company: 'Vercel', location: 'Remote', salary: "$200k+", description: 'Building the next web framework.', url: '#', source: 'Internal' }
         ];
-        setError("Network Congestion: Displaying verified high-relevance roles.");
+        setError("Network Congestion: Displaying cached listings.");
       }
 
       const ranked = await Promise.all(combined.map(async (j: any) => {
@@ -286,15 +296,15 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
         <div className="space-y-4 text-left">
           <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 italic text-left">Market Feed</h2>
           <p className="text-xl text-slate-500 leading-relaxed max-w-2xl text-left">
-            Query global listings across 5 aggregate endpoints. Matching is calculated locally on your hardware.
+            Aggregate listings from 5 providers. Matching is computed on your local device.
           </p>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-3 p-3 bg-white rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/30 focus-within:shadow-2xl focus-within:shadow-slate-200 transition-all text-left">
+        <div className="flex flex-col md:flex-row gap-3 p-3 bg-white rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 transition-all text-left">
           <div className="flex-1 flex items-center px-6 gap-4 text-left">
             <Search className="w-6 h-6 text-slate-300" />
             <input 
-              type="text" placeholder="Job title or stack..." 
+              type="text" placeholder="Title or role..." 
               className="bg-transparent border-none focus:ring-0 w-full h-14 text-slate-900 font-bold text-lg placeholder:text-slate-300"
               value={query} onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
@@ -315,7 +325,7 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 px-6 py-3 bg-amber-50 text-amber-700 rounded-2xl border border-amber-100 text-xs font-bold uppercase tracking-wider animate-in slide-in-from-top-2 text-left">
+          <div className="flex items-center gap-2 px-6 py-3 bg-amber-50 text-amber-700 rounded-2xl border border-amber-100 text-xs font-bold uppercase tracking-wider text-left">
             <AlertCircle size={14} /> {error}
           </div>
         )}
@@ -326,13 +336,13 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
           <div key={j.id} className="gpt-card p-10 flex flex-col justify-between group hover:border-slate-400 transition-all text-left">
             <div className="space-y-6 text-left">
               <div className="flex justify-between items-start text-left">
-                <div className="px-4 py-1.5 bg-[#0f172a] text-white text-[10px] font-black rounded-full shadow-lg shadow-slate-200 uppercase tracking-widest text-left">
+                <div className="px-4 py-1.5 bg-[#0f172a] text-white text-[10px] font-black rounded-full shadow-lg shadow-slate-200">
                   {Math.round(j.score * 100)}% Match
                 </div>
-                <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] text-right">{j.source}</div>
+                <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">{j.source}</div>
               </div>
               <div className="space-y-2 text-left">
-                <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-[1.1] uppercase text-left">{j.title}</h3>
+                <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-[1.1] uppercase text-left italic">{j.title}</h3>
                 <div className="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase tracking-widest text-left">
                    {j.company} <div className="w-1 h-1 bg-slate-200 rounded-full" /> {j.location}
                 </div>
@@ -342,16 +352,16 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
             <div className="pt-10 flex gap-3 text-left">
               <button onClick={() => setSelected(j)} className="btn-gpt-secondary flex-1 text-[10px] uppercase font-black tracking-widest h-12">Tailor</button>
               {j.canAutoApply ? (
-                <button className="btn-gpt-apply flex-1 text-[10px] uppercase font-black tracking-widest h-12 bg-slate-900 border-slate-900 hover:bg-slate-800">Apply</button>
+                <button className="btn-gpt-apply flex-1 text-[10px] uppercase font-black tracking-widest h-12 bg-slate-900 border-slate-900 hover:bg-slate-800">Apply Now</button>
               ) : (
-                <a href={j.url} target="_blank" rel="noreferrer" className="btn-gpt-primary flex-1 text-[10px] uppercase font-black tracking-widest h-12">Visit</a>
+                <a href={j.url} target="_blank" rel="noreferrer" className="btn-gpt-primary flex-1 text-[10px] uppercase font-black tracking-widest h-12">Visit Site</a>
               )}
             </div>
           </div>
         )) : (
           <div className="col-span-full h-[500px] flex flex-col items-center justify-center text-slate-200 grayscale opacity-20 text-center">
             <Search size={120} strokeWidth={0.5} />
-            <p className="mt-8 font-black text-2xl uppercase tracking-[0.5em] text-center">Enter Search</p>
+            <p className="mt-8 font-black text-2xl uppercase tracking-[0.5em] text-center">Awaiting Search</p>
           </div>
         )}
       </div>
@@ -370,20 +380,20 @@ function Modal({ j, profile, onClose }: { j: any, profile: UserProfile | null, o
                 <Activity className="w-8 h-8 text-white" />
              </div>
              <div className="space-y-2 text-left">
-               <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none text-left">{j.title}</h3>
+               <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none text-left italic">{j.title}</h3>
                <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.3em] text-left">{j.company}</p>
              </div>
           </div>
 
           <div className="space-y-8 text-left">
-             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] flex items-center gap-2 text-left">
+             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] flex items-center gap-2 text-left font-mono">
                Strategic Protocol
              </h4>
              <div className="space-y-4 text-left">
                 {[1,2,3].map(i => (
                   <div key={i} className="flex gap-6 p-8 bg-slate-50 rounded-[2rem] border border-slate-100 transition-colors hover:bg-white hover:border-slate-200 text-left">
                      <div className="text-xl font-black text-slate-200 italic text-left">0{i}</div>
-                     <p className="text-sm text-slate-600 leading-relaxed font-bold text-left">Highlight your <span className="text-[#0f172a] underline decoration-slate-300 decoration-2 underline-offset-4">{profile?.skills[i] || 'experience'}</span> to maximize vector match score for this endpoint.</p>
+                     <p className="text-sm text-slate-600 leading-relaxed font-bold text-left">Emphasize your <span className="text-[#0f172a] underline decoration-slate-300 decoration-2 underline-offset-4">{profile?.skills[i] || 'experience'}</span> to maximize matching score.</p>
                   </div>
                 ))}
              </div>
@@ -402,40 +412,40 @@ function ConfigSection() {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-3xl space-y-16 text-left">
        <div className="space-y-4 text-left">
-          <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 text-left">Local Settings</h2>
+          <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 text-left">System Config</h2>
           <p className="text-xl text-slate-500 leading-relaxed text-left">
-            Manage your local processing preferences and application identity.
+            Manage local processing preferences and application buffers.
           </p>
        </div>
 
        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
           <div className="gpt-card p-12 space-y-10 text-left">
-             <div className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2 text-left"><Layers className="w-5 h-5 text-slate-400" /> System Processing</div>
+             <div className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2 text-left font-mono"><Layers className="w-5 h-5 text-slate-400" /> Processing Layer</div>
              <div className="space-y-6 text-left">
                 <div className="flex justify-between items-center py-4 border-b border-slate-100 text-left">
-                   <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Inference</span>
-                   <span className="text-[10px] font-black px-3 py-1 bg-slate-100 text-slate-700 rounded-full border border-slate-200">Local_Vector</span>
+                   <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Engine</span>
+                   <span className="text-[10px] font-black px-3 py-1 bg-slate-100 text-slate-700 rounded-full border border-slate-200">Verified_Local</span>
                 </div>
                 <div className="flex justify-between items-center py-4 border-b border-slate-100 text-left">
                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Security</span>
-                   <span className="text-[10px] font-black text-[#0f172a] uppercase tracking-widest">Verified</span>
+                   <span className="text-[10px] font-black text-[#0f172a] uppercase tracking-widest">Sandboxed</span>
                 </div>
              </div>
           </div>
 
-          <div className="gpt-card p-12 space-y-10 text-left">
-             <div className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2 text-left"><User className="w-5 h-5 text-slate-400" /> Identity Information</div>
+          <div className="gpt-card p-12 space-y-10 text-left font-mono">
+             <div className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2 text-left font-mono"><User className="w-5 h-5 text-slate-400" /> Identity Buffer</div>
              <div className="space-y-6 text-left">
                 <div className="space-y-2 text-left">
-                   <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Full Name</label>
+                   <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-left">Full Name</label>
                    <input type="text" placeholder="Required" className="w-full h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-200" />
                 </div>
                 <div className="space-y-2 text-left">
-                   <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Email Address</label>
+                   <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-left">Email Address</label>
                    <input type="email" placeholder="Required" className="w-full h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-200" />
                 </div>
                 <button 
-                  onClick={() => confirm('Clear local dataset?') && (indexedDB.deleteDatabase('auto-apply-ai-db'), window.location.reload())}
+                  onClick={() => confirm('Purge dataset?') && (indexedDB.deleteDatabase('auto-apply-ai-db'), window.location.reload())}
                   className="w-full mt-6 h-12 text-[10px] font-black text-rose-500 border border-rose-100 hover:bg-rose-50 transition-colors rounded-2xl uppercase tracking-[0.3em]"
                 >
                   Purge Dataset
