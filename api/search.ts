@@ -4,7 +4,10 @@ export default async function handler(
   request: VercelRequest,
   response: VercelResponse
 ) {
-  const { query, location } = request.query;
+  // Use modern WHATWG URL API instead of relying on legacy request.query
+  const url = new URL(request.url || '', `http://${request.headers.host}`);
+  const query = url.searchParams.get('query');
+  const location = url.searchParams.get('location') || '';
 
   if (!query) {
     return response.status(200).json([]);
@@ -12,22 +15,42 @@ export default async function handler(
 
   const ts = Date.now();
 
-  const sources = [
-    { name: 'Adzuna Network', url: `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=45759795&app_key=943e061849f50e8081f9a1240e340c23&what=${encodeURIComponent(query as string)}&where=${encodeURIComponent((location as string) || '')}&results_per_page=10&content-type=application/json` },
-    { name: 'Remote RSS', url: `https://jobicy.com/jobs-rss-feed?query=${encodeURIComponent(query as string)}`, type: 'xml' },
-    { name: 'Direct Board', url: `https://okjob.io/api/job-listings?keyword=${encodeURIComponent(query as string)}&location=${encodeURIComponent((location as string) || '')}` }
-  ];
+  const results = await Promise.all([
+    // Source 1: Adzuna
+    (async () => {
+      try {
+        const target = new URL('https://api.adzuna.com/v1/api/jobs/us/search/1');
+        target.searchParams.set('app_id', '45759795');
+        target.searchParams.set('app_key', '943e061849f50e8081f9a1240e340c23');
+        target.searchParams.set('what', query);
+        target.searchParams.set('where', location);
+        target.searchParams.set('results_per_page', '10');
+        target.searchParams.set('content-type', 'application/json');
 
-  const results = await Promise.all(sources.map(async (s) => {
-    try {
-      const res = await fetch(s.url, {
-        headers: { 'User-Agent': 'Mozilla/5.0' },
-        signal: AbortSignal.timeout(6000) // 6s timeout per source
-      }).catch(() => null);
-      
-      if (!res || !res.ok) return [];
+        const res = await fetch(target.toString(), { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(6000) });
+        if (!res.ok) return [];
+        const d = await res.json();
+        return (d.results || []).map((j: any) => ({
+          id: `adz-${j.id}-${ts}`,
+          title: j.title.replace(/<\/?[^>]+(>|$)/g, ""),
+          company: j.company.display_name,
+          location: j.location.display_name,
+          salary: j.salary_min ? `$${Math.round(j.salary_min/1000)}k+` : "Market Rate",
+          description: j.description.replace(/<\/?[^>]+(>|$)/g, "").trim(),
+          url: j.redirect_url,
+          source: 'Adzuna Network'
+        }));
+      } catch { return []; }
+    })(),
 
-      if (s.type === 'xml') {
+    // Source 2: Jobicy (RSS)
+    (async () => {
+      try {
+        const target = new URL('https://jobicy.com/jobs-rss-feed');
+        target.searchParams.set('query', query);
+
+        const res = await fetch(target.toString(), { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(6000) });
+        if (!res.ok) return [];
         const text = await res.text();
         const items = text.match(/<item>([\s\S]*?)<\/item>/g) || [];
         return items.slice(0, 10).map((item, i) => {
@@ -43,42 +66,36 @@ export default async function handler(
             salary: "Market Rate",
             description: clean(desc),
             url: link.trim(),
-            source: s.name
+            source: 'Remote RSS'
           };
         });
-      }
+      } catch { return []; }
+    })(),
 
-      const d = await res.json();
-      if (s.name === 'Adzuna Network') return (d.results || []).map((j: any) => ({
-        id: `adz-${j.id}-${ts}`,
-        title: j.title.replace(/<\/?[^>]+(>|$)/g, ""),
-        company: j.company.display_name,
-        location: j.location.display_name,
-        salary: j.salary_min ? `$${Math.round(j.salary_min/1000)}k+` : "Market Rate",
-        description: j.description.replace(/<\/?[^>]+(>|$)/g, "").trim(),
-        url: j.redirect_url,
-        source: s.name
-      }));
-      
-      if (s.name === 'Direct Board') return (d.job_listings || d || []).map((j: any, i: number) => ({
-        id: `okj-${j.job_id || i}-${ts}`,
-        title: j.title || j.job_title,
-        company: j.company || "Hiring Partner",
-        location: j.location || "Remote",
-        salary: j.salary || "Market Rate",
-        description: j.description || j.job_description || "",
-        url: `https://okjob.io/jobs/${j.job_id}`,
-        source: s.name,
-        canAutoApply: true
-      }));
+    // Source 3: OkJob
+    (async () => {
+      try {
+        const target = new URL('https://okjob.io/api/job-listings');
+        target.searchParams.set('keyword', query);
+        target.searchParams.set('location', location);
 
-      return [];
-    } catch {
-      return [];
-    }
-  }));
+        const res = await fetch(target.toString(), { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(6000) });
+        if (!res.ok) return [];
+        const d = await res.json();
+        return (d.job_listings || d || []).map((j: any, i: number) => ({
+          id: `okj-${j.job_id || i}-${ts}`,
+          title: j.title || j.job_title,
+          company: j.company || "Hiring Partner",
+          location: j.location || "Remote",
+          salary: j.salary || "Market Rate",
+          description: j.description || j.job_description || "",
+          url: `https://okjob.io/jobs/${j.job_id}`,
+          source: 'Direct Board',
+          canAutoApply: true
+        }));
+      } catch { return []; }
+    })()
+  ]);
 
-  const combined = results.flat();
-
-  return response.status(200).json(combined);
+  return response.status(200).json(results.flat());
 }
