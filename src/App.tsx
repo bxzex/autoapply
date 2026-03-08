@@ -294,6 +294,18 @@ function SearchSection({ profile, onApply }: { profile: UserProfile | null, onAp
           const jE = await getEmbedding(j.description + ' ' + j.title)
           let score = cosineSimilarity(queryEmbedding, jE)
           if (profile) score = (score * 0.4) + (cosineSimilarity(profile.embedding, jE) * 0.6)
+          
+          // Location Boost
+          if (location) {
+            const locLower = location.toLowerCase();
+            const jLocLower = (j.location || '').toLowerCase();
+            if (jLocLower.includes(locLower)) {
+              score += 0.2; // Significant boost for exact location match
+            } else if (jLocLower.includes('remote')) {
+              score += 0.05; // Slight boost for remote
+            }
+          }
+          
           return { ...j, score }
         } catch (err) {
           console.error('Embedding error for job:', j.id, err);

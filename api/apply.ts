@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import chromium from '@sparticuz/chromium';
+import chromium from '@sparticuz/chromium-min';
 import puppeteer from 'puppeteer-core';
+import path from 'path';
 
 export const maxDuration = 60; 
 
@@ -20,48 +21,49 @@ export default async function handler(
 
   let browser = null;
   try {
-    // 1. Configure Browser Bridge
-    // Note: Version 123.0.1 is very stable for Vercel environments
-    const executablePath = await chromium.executablePath();
+    // 1. Setup Robust Browser Bridge with Manual Library Path
+    // Using chromium-min with explicit versioning for Vercel
+    const executablePath = await chromium.executablePath(
+      'https://github.com/Sparticuz/chromium/releases/download/v132.0.0/chromium-v132.0.0-pack.tar'
+    );
+
+    // CRITICAL: Point the system to where libraries are extracted
+    if (process.env.VERCEL) {
+      const execDir = path.dirname(executablePath);
+      process.env.LD_LIBRARY_PATH = `${execDir}:${process.env.LD_LIBRARY_PATH || ""}`;
+    }
 
     browser = await puppeteer.launch({
-      args: [...chromium.args, "--hide-scrollbars", "--disable-web-security", "--no-sandbox"],
+      args: [
+        ...chromium.args, 
+        "--hide-scrollbars", 
+        "--disable-web-security", 
+        "--no-sandbox",
+        "--disable-setuid-sandbox"
+      ],
       defaultViewport: chromium.defaultViewport,
       executablePath,
-      headless: chromium.headless,
+      headless: true,
     });
 
     const page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');
 
     // 2. Protocol Navigation
-    // We use networkidle2 to ensure the page has somewhat loaded its forms
     await page.goto(jobUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
     // 3. Automated Form Preparation
     try {
-      // Find and fill common fields
-      const inputs = await page.$$('input');
-      for (const input of inputs) {
-        const name = await (await input.getProperty('name')).jsonValue() as string;
-        const type = await (await input.getProperty('type')).jsonValue() as string;
-        
-        const lowerName = name?.toLowerCase() || '';
-        
-        if (firstName && (lowerName.includes('first') || lowerName.includes('given'))) {
-          await input.type(firstName).catch(() => null);
-        } else if (lastName && (lowerName.includes('last') || lowerName.includes('family'))) {
-          await input.type(lastName).catch(() => null);
-        } else if (email && (type === 'email' || lowerName.includes('email'))) {
-          await input.type(email).catch(() => null);
-        }
-      }
+      // Direct field injection
+      if (firstName) await page.type('input[name*="first"], input[name*="given"]', firstName).catch(() => null);
+      if (lastName) await page.type('input[name*="last"], input[name*="family"]', lastName).catch(() => null);
+      if (email) await page.type('input[type="email"], input[name*="email"]', email).catch(() => null);
     } catch (err) {
       console.warn('Protocol Injection Error:', err);
     }
 
     // 4. Capture Visual Telemetry
-    const screenshot = await page.screenshot({ type: 'jpeg', quality: 50 });
+    const screenshot = await page.screenshot({ type: 'jpeg', quality: 40 });
     const base64Screenshot = (screenshot as Buffer).toString('base64');
 
     return response.status(200).json({ 

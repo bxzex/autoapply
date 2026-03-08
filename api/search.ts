@@ -51,12 +51,12 @@ export default async function handler(
         const res = await fetch(`https://www.arbeitnow.com/api/job-board-api`, { signal: AbortSignal.timeout(6000) });
         if (!res.ok) return [];
         const d = await res.json();
-        const filtered = d.data.filter((j: any) => {
-          const mQuery = j.title.toLowerCase().includes(query.toLowerCase()) || j.description.toLowerCase().includes(query.toLowerCase());
-          const mLocation = location ? j.location.toLowerCase().includes(location.toLowerCase()) : true;
-          return mQuery && mLocation;
-        });
-        return filtered.slice(0, 10).map((j: any, i: number) => ({
+        // Return everything that matches the query, don't hard-filter location here
+        const filtered = d.data.filter((j: any) => 
+          j.title.toLowerCase().includes(query.toLowerCase()) || 
+          j.description.toLowerCase().includes(query.toLowerCase())
+        );
+        return filtered.slice(0, 15).map((j: any, i: number) => ({
           id: `arb-${i}-${ts}`,
           title: j.title,
           company: j.company_name,
@@ -74,7 +74,8 @@ export default async function handler(
       try {
         const target = new URL('https://www.themuse.com/api/public/jobs');
         target.searchParams.set('category', query);
-        if (location) target.searchParams.set('location', location);
+        // Soft location passing - if it returns 0, we'll lose results, so we only pass if likely valid
+        if (location && location.length > 2) target.searchParams.set('location', location);
         target.searchParams.set('page', '0');
 
         const res = await fetch(target.toString(), { signal: AbortSignal.timeout(6000) });
@@ -99,11 +100,10 @@ export default async function handler(
         const res = await fetch(`https://jobicy.com/api/v2/remote-jobs?count=20`, { signal: AbortSignal.timeout(6000) });
         if (!res.ok) return [];
         const d = await res.json();
-        const filtered = (d.jobs || []).filter((j: any) => {
-          const mQuery = j.jobTitle.toLowerCase().includes(query.toLowerCase()) || j.jobDescription.toLowerCase().includes(query.toLowerCase());
-          const mLocation = location ? j.jobGeo.toLowerCase().includes(location.toLowerCase()) : true;
-          return mQuery && mLocation;
-        });
+        const filtered = (d.jobs || []).filter((j: any) => 
+          j.jobTitle.toLowerCase().includes(query.toLowerCase()) || 
+          j.jobDescription.toLowerCase().includes(query.toLowerCase())
+        );
         return filtered.map((j: any) => ({
           id: `jby-${j.id}-${ts}`,
           title: j.jobTitle,
