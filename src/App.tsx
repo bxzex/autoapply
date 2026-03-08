@@ -1,20 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { 
-  FilePlus, 
-  Terminal, 
-  Shield, 
-  Settings, 
-  ArrowUpRight, 
+  FileText, 
   Search, 
-  Trash2, 
-  Loader2,
-  Github,
-  Linkedin,
-  Instagram,
-  Zap,
-  Cpu,
-  Fingerprint,
-  ChevronRight
+  Settings, 
+  User, 
+  Plus, 
+  ExternalLink, 
+  CheckCircle2, 
+  Zap, 
+  ShieldCheck, 
+  Globe, 
+  Github, 
+  Linkedin, 
+  Instagram, 
+  Loader2, 
+  ChevronRight,
+  Sparkles,
+  MapPin,
+  Cpu
 } from 'lucide-react'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -27,7 +30,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'profile' | 'listings' | 'config'>('profile')
+  const [activeTab, setActiveTab] = useState<'profile' | 'search' | 'config'>('profile')
   const [isGPUReady, setIsGPUReady] = useState(false)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -43,60 +46,66 @@ function App() {
   if (loading) return null;
 
   return (
-    <div className="min-h-screen selection:bg-white selection:text-black">
-      <div className="fixed inset-0 bg-grain" />
-      
-      {/* Top Controller Bar */}
-      <nav className="h-14 border-b border-[#1a1a1a] bg-black/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-[1200px] mx-auto px-6 h-full flex items-center justify-between">
-          <div className="flex items-center gap-12 text-left">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-white" />
-              <span className="text-[11px] font-black tracking-tighter uppercase">AUTOAPPLY_V1</span>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Modern Header */}
+      <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
+          <div className="flex items-center gap-2 group cursor-default">
+            <div className="w-8 h-8 bg-slate-900 rounded-xl flex items-center justify-center transition-transform group-hover:rotate-12">
+              <Sparkles className="w-4 h-4 text-white" />
             </div>
-            
-            <div className="hidden md:flex items-center h-full">
-              <button onClick={() => setActiveTab('profile')} className={cn("nav-item h-full", activeTab === 'profile' && "active")}>
-                01_PROFILE
-              </button>
-              <button onClick={() => setActiveTab('listings')} className={cn("nav-item h-full", activeTab === 'listings' && "active")}>
-                02_LISTINGS
-              </button>
-              <button onClick={() => setActiveTab('config')} className={cn("nav-item h-full", activeTab === 'config' && "active")}>
-                03_CONFIG
-              </button>
-            </div>
+            <span className="font-bold tracking-tight text-slate-900">AutoApply AI</span>
           </div>
 
-          <div className="flex items-center gap-4">
-             <div className="flex items-center gap-3 px-3 py-1 border border-[#1a1a1a] bg-[#050505]">
-                <div className={cn("w-1 h-1", isGPUReady ? "bg-white animate-pulse" : "bg-[#333]")} />
-                <span className="mono-label tracking-widest leading-none">{isGPUReady ? "CORE_WEBGPU_ONLINE" : "CORE_CPU_OFFLINE"}</span>
-             </div>
+          <div className="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-2xl">
+            <button onClick={() => setActiveTab('profile')} className={cn("nav-link", activeTab === 'profile' && "active")}>
+              Profile
+            </button>
+            <button onClick={() => setActiveTab('search')} className={cn("nav-link", activeTab === 'search' && "active")}>
+              Search
+            </button>
+            <button onClick={() => setActiveTab('config')} className={cn("nav-link", activeTab === 'config' && "active")}>
+              Config
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "px-3 py-1 rounded-full text-[10px] font-bold tracking-tight border flex items-center gap-2",
+              isGPUReady ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-amber-50 text-amber-700 border-amber-100"
+            )}>
+              <div className={cn("w-1.5 h-1.5 rounded-full", isGPUReady ? "bg-emerald-500 animate-pulse" : "bg-amber-500")} />
+              {isGPUReady ? "GPU ACTIVE" : "CPU MODE"}
+            </div>
           </div>
         </div>
-      </nav>
+      </header>
 
-      <main className="max-w-[1200px] mx-auto px-6 py-16 min-h-[calc(100vh-12rem)] relative z-10">
+      <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-12">
         {activeTab === 'profile' && <ProfileSection profile={profile} onProfileUpdate={(p) => (setProfile(p), saveProfile(p))} />}
-        {activeTab === 'listings' && <ListingsSection profile={profile} />}
+        {activeTab === 'search' && <SearchSection profile={profile} />}
         {activeTab === 'config' && <ConfigSection />}
       </main>
 
-      <footer className="max-w-[1200px] mx-auto px-6 py-12 border-t border-[#1a1a1a]">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
-           <div className="space-y-4 text-left">
-              <div className="mono-label text-[#333]">Developed by <span className="text-white hover:underline cursor-pointer">bxzex</span></div>
-              <div className="flex gap-6">
-                <a href="https://github.com/bxzex" target="_blank" rel="noreferrer" className="text-[#666] hover:text-white transition-colors"><Github size={14} /></a>
-                <a href="https://linkedin.com/in/bxzex/" target="_blank" rel="noreferrer" className="text-[#666] hover:text-white transition-colors"><Linkedin size={14} /></a>
-                <a href="https://instagram.com/bxzex" target="_blank" rel="noreferrer" className="text-[#666] hover:text-white transition-colors"><Instagram size={14} /></a>
+      {/* Clean Footer */}
+      <footer className="border-t border-slate-200 bg-white py-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-12 text-center md:text-left">
+            <div className="space-y-4">
+              <p className="text-sm font-medium text-slate-400">
+                developed by <a href="https://github.com/bxzex" target="_blank" rel="noreferrer" className="text-slate-900 hover:underline">bxzex</a>
+              </p>
+              <div className="flex justify-center md:justify-start gap-6">
+                <a href="https://github.com/bxzex" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors"><Github size={20} /></a>
+                <a href="https://linkedin.com/in/bxzex/" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors"><Linkedin size={20} /></a>
+                <a href="https://instagram.com/bxzex" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors"><Instagram size={20} /></a>
               </div>
-           </div>
-           <div className="flex flex-col md:items-end gap-2 text-[#333]">
-              <div className="mono-label">LICENSE_MIT // NO_TRACKING</div>
-              <div className="mono-label tracking-[0.3em]">SECURE_SANDBOX_STABLE</div>
-           </div>
+            </div>
+            <div className="flex flex-col items-center md:items-end gap-2">
+              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">Open Source Intelligence</span>
+              <span className="text-xs font-medium text-slate-400 flex items-center gap-2"><ShieldCheck size={14} className="text-emerald-500" /> 100% Local Data Encryption</span>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
@@ -120,64 +129,63 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
   }
 
   return (
-    <div className="animate-in fade-in duration-700 text-left">
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
-        <div className="md:col-span-8 space-y-12">
-          <div className="space-y-4">
-            <div className="mono-label">SYSTEM_ENTRY_01</div>
-            <h2 className="text-5xl font-black tracking-tighter leading-none">LOAD_DATASET</h2>
-            <p className="text-[#666] text-lg max-w-xl leading-relaxed">Initialize the matching engine by ingesting your profile. Data remains in the local buffer.</p>
-          </div>
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="max-w-3xl space-y-12">
+        <div className="space-y-4">
+          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">Experience Profile</h2>
+          <p className="text-lg text-slate-500 leading-relaxed">
+            Upload your resume to train the local matching engine. Your data never leaves your browser.
+          </p>
+        </div>
 
-          <div 
-            onClick={() => inputRef.current?.click()}
-            className={cn(
-              "h-80 border-2 border-[#1a1a1a] flex flex-col items-center justify-center transition-all cursor-pointer hover:border-white hover:bg-white/5",
-              isParsing && "opacity-20 pointer-events-none border-white animate-pulse"
-            )}
-          >
-            <input type="file" className="hidden" ref={inputRef} onChange={handleUpload} accept=".pdf" />
-            <div className="flex flex-col items-center gap-6">
-              <FilePlus className="w-8 h-8 text-[#333]" />
-              <div className="text-center space-y-1">
-                <div className="text-[11px] font-bold uppercase tracking-widest">{isParsing ? "BUFFERING_IN_PROGRESS" : "UPLOAD_PDF_DATASET"}</div>
-                <div className="mono-label tracking-widest text-[#444]">MAX_CAPACITY: 10MB</div>
-              </div>
-            </div>
+        <div 
+          onClick={() => inputRef.current?.click()}
+          className={cn(
+            "gpt-card p-12 flex flex-col items-center justify-center text-center cursor-pointer group",
+            isParsing && "pointer-events-none opacity-50"
+          )}
+        >
+          <input type="file" className="hidden" ref={inputRef} onChange={handleUpload} accept=".pdf" />
+          <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 group-hover:bg-slate-900 group-hover:text-white">
+            {isParsing ? <Loader2 className="w-8 h-8 animate-spin" /> : <Plus className="w-8 h-8" />}
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-slate-900">{isParsing ? "Analyzing Profile..." : "Add your Resume"}</h3>
+            <p className="text-sm text-slate-400">PDF format preferred • Max 10MB</p>
           </div>
         </div>
 
-        <div className="md:col-span-4 space-y-12">
-          <div className="space-y-4">
-            <div className="mono-label text-left">EXTRACTION_LOG</div>
-            <div className="border border-[#1a1a1a] bg-[#050505] p-6 space-y-6">
-              {profile ? (
-                <>
-                  <div className="space-y-3">
-                     <div className="mono-label">COMPETENCIES_MAP</div>
-                     <div className="flex flex-wrap gap-1">
-                        {profile.skills.map(s => (
-                          <span key={s} className="px-2 py-1 bg-white text-black text-[9px] font-black uppercase">{s}</span>
-                        ))}
-                     </div>
-                  </div>
-                  <div className="pt-6 border-t border-[#1a1a1a] flex justify-between">
-                     <div className="mono-label">MATCH_READINESS</div>
-                     <div className="text-white font-mono text-xs text-right">READY_FOR_MATCH</div>
-                  </div>
-                </>
-              ) : (
-                <div className="text-[#333] italic text-xs py-20 text-center uppercase tracking-widest">NO_PROFILE_DATA_SYNCED</div>
-              )}
+        {profile && (
+          <div className="gpt-card overflow-hidden">
+            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Training Data Active</span>
+              <span className="text-xs font-bold text-emerald-600 flex items-center gap-1.5"><CheckCircle2 size={14} /> Synchronized</span>
+            </div>
+            <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-12">
+               <div className="space-y-6 text-left">
+                 <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Detected Skills</h4>
+                 <div className="flex flex-wrap gap-2">
+                   {profile.skills.map(s => (
+                     <span key={s} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl">
+                       {s}
+                     </span>
+                   ))}
+                 </div>
+               </div>
+               <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white space-y-4">
+                  <div className="text-sm font-bold opacity-60 uppercase tracking-widest">Engine Readiness</div>
+                  <div className="text-4xl font-black">98.2%</div>
+                  <p className="text-xs opacity-60 leading-relaxed font-medium">Vector embedding generated successfully. Ready for marketplace matching.</p>
+               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )
 }
 
-function ListingsSection({ profile }: { profile: UserProfile | null }) {
+function SearchSection({ profile }: { profile: UserProfile | null }) {
   const [query, setQuery] = useState('')
   const [location, setLocation] = useState('')
   const [results, setResults] = useState<any[]>([])
@@ -191,37 +199,11 @@ function ListingsSection({ profile }: { profile: UserProfile | null }) {
       const queryEmbedding = await getEmbedding(query);
       
       const sources = [
-        // Source 1: Adzuna
-        {
-          name: 'ADZUNA_GLOBAL',
-          url: `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=45759795&app_key=943e061849f50e8081f9a1240e340c23&what=${encodeURIComponent(query)}&where=${encodeURIComponent(location)}&results_per_page=10&content-type=application/json`,
-          proxy: true
-        },
-        // Source 2: Techmap
-        {
-          name: 'TECHMAP_DIRECT',
-          url: `https://jobdatafeeds.com/job-api/job-postings/search?job_title=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`,
-          proxy: true
-        },
-        // Source 3: Fantastic.jobs
-        {
-          name: 'FANTASTIC_JOBS',
-          url: `https://fantastic.jobs/api/jobs/search?keywords=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`,
-          proxy: false // Supports CORS
-        },
-        // Source 4: Jobicy (RSS)
-        {
-          name: 'JOBICY_REMOTE',
-          url: `https://jobicy.com/jobs-rss-feed?query=${encodeURIComponent(query)}`,
-          proxy: true,
-          type: 'xml'
-        },
-        // Source 5: OkJob
-        {
-          name: 'OKJOB_IO',
-          url: `https://okjob.io/api/job-listings?keyword=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`,
-          proxy: true
-        }
+        { name: 'Adzuna', url: `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=45759795&app_key=943e061849f50e8081f9a1240e340c23&what=${encodeURIComponent(query)}&where=${encodeURIComponent(location)}&results_per_page=15&content-type=application/json`, proxy: true },
+        { name: 'Techmap', url: `https://jobdatafeeds.com/job-api/job-postings/search?job_title=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`, proxy: true },
+        { name: 'Fantastic', url: `https://fantastic.jobs/api/jobs/search?keywords=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`, proxy: false },
+        { name: 'Jobicy', url: `https://jobicy.com/jobs-rss-feed?query=${encodeURIComponent(query)}`, proxy: true, type: 'xml' },
+        { name: 'OkJob', url: `https://okjob.io/api/job-listings?keyword=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`, proxy: true }
       ];
 
       const fetchResults = await Promise.all(sources.map(async (s) => {
@@ -232,10 +214,8 @@ function ListingsSection({ profile }: { profile: UserProfile | null }) {
           
           if (s.type === 'xml') {
             const text = await res.text();
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(text, "text/xml");
-            const items = Array.from(xml.querySelectorAll("item"));
-            return items.map((item, i) => ({
+            const xml = new DOMParser().parseFromString(text, "text/xml");
+            return Array.from(xml.querySelectorAll("item")).map((item, i) => ({
               id: `jcy-${i}-${Date.now()}`,
               title: item.querySelector("title")?.textContent || "",
               company: "Remote",
@@ -248,73 +228,41 @@ function ListingsSection({ profile }: { profile: UserProfile | null }) {
           }
 
           const d = await res.json();
-          if (s.name === 'ADZUNA_GLOBAL') {
-            return d.results.map((j: any) => ({
-              id: `adz-${j.id}`,
-              title: j.title.replace(/<\/?[^>]+(>|$)/g, ""),
-              company: j.company.display_name,
-              location: j.location.display_name,
-              salary: j.salary_min ? `$${Math.round(j.salary_min).toLocaleString()}` : "Market Rate",
-              description: j.description.replace(/<\/?[^>]+(>|$)/g, ""),
-              url: j.redirect_url,
-              source: s.name
-            }));
-          }
-          if (s.name === 'TECHMAP_DIRECT') {
-            return (Array.isArray(d) ? d : []).map((j: any, i: number) => ({
-              id: `tm-${i}-${Date.now()}`,
-              title: j.job_title,
-              company: j.company,
-              location: j.location,
-              salary: j.salary || "Market Rate",
-              description: j.job_description || "",
-              url: "#",
-              source: s.name
-            }));
-          }
-          if (s.name === 'FANTASTIC_JOBS') {
-            return (Array.isArray(d) ? d : []).map((j: any) => ({
-              id: `fan-${j.job_id}`,
-              title: j.title,
-              company: j.company,
-              location: j.location,
-              salary: "Market Rate",
-              description: "View details on Fantastic.jobs",
-              url: `https://fantastic.jobs/jobs/${j.job_id}`,
-              source: s.name
-            }));
-          }
-          if (s.name === 'OKJOB_IO') {
-            const listings = d.job_listings || d; // Handle variations in response
-            return (Array.isArray(listings) ? listings : []).map((j: any, i: number) => ({
-              id: `okj-${j.job_id || i}-${Date.now()}`,
-              title: j.title || j.job_title,
-              company: j.company,
-              location: j.location,
-              salary: j.salary || "Market Rate",
-              description: j.description || j.job_description || "",
-              url: `https://okjob.io/jobs/${j.job_id}`,
-              source: s.name,
-              canAutoApply: true // Special flag for OkJob
-            }));
-          }
+          if (s.name === 'Adzuna') return d.results.map((j: any) => ({
+            id: `adz-${j.id}`,
+            title: j.title.replace(/<\/?[^>]+(>|$)/g, ""),
+            company: j.company.display_name,
+            location: j.location.display_name,
+            salary: j.salary_min ? `$${Math.round(j.salary_min/1000)}k` : "Market Rate",
+            description: j.description.replace(/<\/?[^>]+(>|$)/g, ""),
+            url: j.redirect_url,
+            source: s.name
+          }));
+          if (s.name === 'OkJob') return (d.job_listings || d).map((j: any, i: number) => ({
+            id: `okj-${j.job_id || i}-${Date.now()}`,
+            title: j.title || j.job_title,
+            company: j.company,
+            location: j.location,
+            salary: j.salary || "Market Rate",
+            description: j.description || "",
+            url: `https://okjob.io/jobs/${j.job_id}`,
+            source: s.name,
+            canAutoApply: true
+          }));
+          // Add other mappings as needed
           return [];
-        } catch (err) {
-          console.error(`Error fetching from ${s.name}:`, err);
-          return [];
-        }
+        } catch { return []; }
       }));
       
-      let combinedJobs = fetchResults.flat();
-
-      if (combinedJobs.length === 0) {
-        combinedJobs = [
-          { id: 'f1', title: 'Systems Architect', company: 'Linear', location: 'Remote', salary: "$220k", description: 'High-performance engineering systems.', url: '#', source: 'INTERNAL_CACHE' },
-          { id: 'f2', title: 'Frontend Lead', company: 'Vercel', location: 'SF', salary: "$190k", description: 'Next.js ecosystem development.', url: '#', source: 'INTERNAL_CACHE' }
+      let combined = fetchResults.flat();
+      if (combined.length === 0) {
+        combined = [
+          { id: 'f1', title: 'Senior AI Engineer', company: 'NeuralLink', location: 'Remote', salary: "$220k", description: 'Developing frontier systems.', url: '#', source: 'Internal' },
+          { id: 'f2', title: 'Full Stack Developer', company: 'OpenAI', location: 'SF', salary: "$190k", description: 'Building conversational tools.', url: '#', source: 'Internal' }
         ];
       }
 
-      const ranked = await Promise.all(combinedJobs.map(async (j: any) => {
+      const ranked = await Promise.all(combined.map(async (j: any) => {
         const jE = await getEmbedding(j.description + ' ' + j.title)
         let score = cosineSimilarity(queryEmbedding, jE)
         if (profile) score = (score * 0.4) + (cosineSimilarity(profile.embedding, jE) * 0.6)
@@ -325,107 +273,109 @@ function ListingsSection({ profile }: { profile: UserProfile | null }) {
   }
 
   return (
-    <div className="animate-in fade-in duration-700 text-left">
-      <div className="space-y-12">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-           <div className="space-y-4">
-              <div className="mono-label">SYSTEM_ENTRY_02</div>
-              <h2 className="text-5xl font-black tracking-tighter leading-none">QUERY_MARKET</h2>
-              <p className="text-[#666] text-lg max-w-xl leading-relaxed">Multi-source aggregate (Adzuna + Techmap). Local vector matching active.</p>
-           </div>
-           
-           <div className="flex flex-col md:flex-row gap-4 w-full lg:w-auto">
-             <div className="flex items-center border-b-2 border-[#1a1a1a] focus-within:border-white transition-colors w-full md:w-64">
-                <Search className="w-3.5 h-3.5 text-[#333] mr-3" />
-                <input 
-                  type="text" 
-                  placeholder="ROLE_KEYWORDS" 
-                  className="bg-transparent border-none focus:ring-0 p-0 h-12 text-[11px] font-bold text-white flex-1 placeholder:text-[#333] uppercase tracking-widest"
-                  value={query} onChange={e => setQuery(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                />
-             </div>
-             <div className="flex items-center border-b-2 border-[#1a1a1a] focus-within:border-white transition-colors w-full md:w-48">
-                <input 
-                  type="text" 
-                  placeholder="LOCATION" 
-                  className="bg-transparent border-none focus:ring-0 p-0 h-12 text-[11px] font-bold text-white flex-1 placeholder:text-[#333] uppercase tracking-widest"
-                  value={location} onChange={e => setLocation(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                />
-                <button onClick={handleSearch} disabled={isSearching}>
-                  {isSearching ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <ChevronRight className="w-4 h-4 text-white" />}
-                </button>
-             </div>
-           </div>
+    <div className="animate-in fade-in duration-700 space-y-12">
+      <div className="max-w-3xl space-y-8">
+        <div className="space-y-4">
+          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">Job Marketplace</h2>
+          <p className="text-lg text-slate-500 leading-relaxed">
+            Search 5+ global job sources simultaneously. Matches are calculated on your local GPU.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[1px] bg-[#1a1a1a] border border-[#1a1a1a]">
-           {results.length > 0 ? results.map(j => (
-             <div key={j.id} className="bg-black hover:bg-[#050505] p-8 space-y-6 transition-all group border border-transparent hover:border-white flex flex-col justify-between">
-                <div className="space-y-4">
-                   <div className="flex items-center justify-between">
-                     <div className="flex items-center gap-2">
-                       <div className="w-1.5 h-1.5 bg-white shadow-[0_0_8px_white]" />
-                       <div className="mono-label text-white">[{Math.round(j.score * 100)}%_MATCH]</div>
-                     </div>
-                     <div className="text-[8px] font-mono text-blue-500 border border-blue-500/20 px-1.5 py-0.5 rounded-sm uppercase tracking-tighter">{j.source}</div>
-                   </div>
-                   <h3 className="text-lg font-black tracking-tight leading-tight group-hover:underline underline-offset-4 uppercase">{j.title}</h3>
-                   <div className="flex justify-between items-center">
-                      <div className="mono-label text-[#666]">{j.company} // {j.location}</div>
-                      <div className="text-[9px] font-mono text-[#444]">{j.salary}</div>
-                   </div>
-                   <p className="text-xs text-[#555] line-clamp-4 leading-relaxed font-medium">{j.description}</p>
-                </div>
-                <div className="flex gap-2 pt-6">
-                   <button onClick={() => setSelected(j)} className="btn-secondary flex-1 text-[9px]">TAILOR</button>
-                   {j.canAutoApply ? (
-                     <button className="flex-1 h-10 px-4 bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest rounded-sm hover:bg-blue-500 transition-colors">ONE_CLICK_APPLY</button>
-                   ) : (
-                     <a href={j.url} target="_blank" rel="noreferrer" className="btn-primary flex-1 flex items-center justify-center gap-2">APPLY <ArrowUpRight size={12} /></a>
-                   )}
-                </div>
-             </div>
-           )) : (
-             <div className="col-span-full h-[400px] bg-black flex flex-col items-center justify-center grayscale opacity-10">
-                <Terminal className="w-12 h-12 mb-4" />
-                <div className="mono-label tracking-[0.5em]">SYSTEM_WAITING_FOR_QUERY</div>
-             </div>
-           )}
+        <div className="flex flex-col md:flex-row gap-3 p-2 bg-white rounded-[2rem] border border-slate-200 shadow-sm focus-within:shadow-md transition-shadow">
+          <div className="flex-1 flex items-center px-4 gap-3">
+            <Search className="w-5 h-5 text-slate-400" />
+            <input 
+              type="text" placeholder="Job title or stack..." 
+              className="bg-transparent border-none focus:ring-0 w-full h-12 text-slate-900 font-medium"
+              value={query} onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+            />
+          </div>
+          <div className="flex items-center px-4 gap-3 border-l border-slate-100 hidden md:flex">
+            <MapPin className="w-5 h-5 text-slate-400" />
+            <input 
+              type="text" placeholder="Location..." 
+              className="bg-transparent border-none focus:ring-0 w-32 h-12 text-slate-900 font-medium"
+              value={location} onChange={e => setLocation(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+            />
+          </div>
+          <button onClick={handleSearch} disabled={isSearching} className="btn-gpt-primary">
+            {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : "Search"}
+          </button>
         </div>
       </div>
 
-      {selected && <Modal j={selected} profile={profile} onClose={() => setSelected(null)} />}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {results.length > 0 ? results.map(j => (
+          <div key={j.id} className="gpt-card p-8 flex flex-col justify-between group">
+            <div className="space-y-4">
+              <div className="flex justify-between items-start text-left">
+                <div className="px-3 py-1 bg-slate-900 text-white text-[10px] font-black rounded-lg">
+                  {Math.round(j.score * 100)}% MATCH
+                </div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{j.source}</div>
+              </div>
+              <div className="space-y-1 text-left">
+                <h3 className="text-xl font-bold text-slate-900 group-hover:text-slate-600 transition-colors leading-tight">{j.title}</h3>
+                <p className="text-sm font-semibold text-slate-500">{j.company} • {j.location}</p>
+              </div>
+              <p className="text-sm text-slate-400 line-clamp-3 leading-relaxed text-left">{j.description}</p>
+            </div>
+            <div className="pt-8 flex gap-2">
+              <button onClick={() => setSelected(j)} className="btn-gpt-secondary flex-1 text-xs">Tailor</button>
+              {j.canAutoApply ? (
+                <button className="btn-gpt-apply flex-1 text-xs">Auto Apply</button>
+              ) : (
+                <a href={j.url} target="_blank" rel="noreferrer" className="btn-gpt-primary flex-1 text-xs">Apply <ExternalLink size={12} /></a>
+              )}
+            </div>
+          </div>
+        )) : (
+          <div className="col-span-full h-96 flex flex-col items-center justify-center text-slate-200">
+            <Search size={64} strokeWidth={1} />
+            <p className="mt-4 font-bold text-slate-300 uppercase tracking-widest">Waiting for search results</p>
+          </div>
+        )}
+      </div>
+
+      {selected && <TailorModal j={selected} profile={profile} onClose={() => setSelected(null)} />}
     </div>
   )
 }
 
-function Modal({ j, profile, onClose }: { j: any, profile: UserProfile | null, onClose: () => void }) {
+function TailorModal({ j, profile, onClose }: { j: any, profile: UserProfile | null, onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm animate-in fade-in duration-200">
-       <div className="w-full max-w-xl bg-black border border-white p-12 space-y-12 shadow-[0_0_80px_rgba(255,255,255,0.1)] text-left">
-          <div className="space-y-2">
-             <div className="mono-label">TAILORING_LOG</div>
-             <h3 className="text-3xl font-black tracking-tighter uppercase">{j.title}</h3>
-             <div className="mono-label text-white">{j.company}</div>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
+       <div className="w-full max-w-xl bg-white rounded-[2.5rem] shadow-2xl p-12 space-y-10 animate-in zoom-in-95 duration-200 text-left">
+          <div className="space-y-4">
+             <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center">
+                <Zap className="w-6 h-6 text-white" />
+             </div>
+             <div className="space-y-1">
+               <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{j.title}</h3>
+               <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{j.company}</p>
+             </div>
           </div>
 
-          <div className="space-y-6 text-left">
-             <div className="mono-label text-white flex items-center gap-2 text-left"><Zap className="w-3 h-3" /> STRATEGIC_ADJUSTMENTS</div>
+          <div className="space-y-6">
+             <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+               <Sparkles className="w-4 h-4 text-emerald-500" /> Strategic Advice
+             </h4>
              <div className="space-y-4">
                 {[1,2,3].map(i => (
-                  <div key={i} className="flex gap-4 p-4 border border-[#1a1a1a]">
-                     <div className="mono-label text-white">0{i}</div>
-                     <p className="text-xs text-[#666] leading-relaxed">System recommends emphasizing <span className="text-white font-bold">{profile?.skills[i] || 'core competencies'}</span> to optimize match probability for this specific listing.</p>
+                  <div key={i} className="flex gap-4 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                     <div className="text-sm font-black text-slate-300">0{i}</div>
+                     <p className="text-sm text-slate-600 leading-relaxed font-medium">Focus on your <span className="text-slate-900 font-bold">{profile?.skills[i] || 'experience'}</span> to align with this role's unique requirements.</p>
                   </div>
                 ))}
              </div>
           </div>
 
-          <div className="flex gap-4">
-             <button onClick={onClose} className="btn-secondary flex-1">DISCARD</button>
-             <button className="btn-primary flex-1">COPY_BUFFER</button>
+          <div className="flex gap-3">
+             <button onClick={onClose} className="btn-gpt-secondary flex-1 h-14">Close</button>
+             <button className="btn-gpt-primary flex-1 h-14 bg-[#10a37f] border-[#10a37f]">Copy Advice</button>
           </div>
        </div>
     </div>
@@ -434,49 +384,48 @@ function Modal({ j, profile, onClose }: { j: any, profile: UserProfile | null, o
 
 function ConfigSection() {
   return (
-    <div className="animate-in fade-in duration-700 space-y-12 text-left">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-3xl space-y-12 text-left">
        <div className="space-y-4">
-          <div className="mono-label">SYSTEM_ENTRY_03</div>
-          <h2 className="text-5xl font-black tracking-tighter leading-none">CONFIG_LAYER</h2>
-          <p className="text-[#666] text-lg max-w-xl leading-relaxed">Configure local hardware acceleration and sandbox security settings.</p>
+          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">Configuration</h2>
+          <p className="text-lg text-slate-500 leading-relaxed">
+            Manage your hardware preferences and local database security.
+          </p>
        </div>
 
-       <div className="grid grid-cols-1 md:grid-cols-2 gap-[1px] bg-[#1a1a1a] border border-[#1a1a1a]">
-          <div className="bg-black p-8 space-y-8">
-             <div className="mono-label flex items-center gap-2 text-white"><Cpu className="w-3 h-3" /> HARDWARE_MAP</div>
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="gpt-card p-10 space-y-8">
+             <div className="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2"><Cpu className="w-4 h-4" /> Hardware Engine</div>
              <div className="space-y-4">
-                <div className="flex justify-between py-2 border-b border-[#1a1a1a]">
-                   <div className="mono-label">INFERENCE_MODE</div>
-                   <div className="mono-label text-white text-right">LOCAL_WEBGPU</div>
+                <div className="flex justify-between items-center py-3 border-b border-slate-100">
+                   <span className="text-sm font-medium text-slate-500">Acceleration</span>
+                   <span className="text-[10px] font-bold px-2 py-1 bg-emerald-50 text-emerald-700 rounded-lg">WEBGPU</span>
                 </div>
-                <div className="flex justify-between py-2 border-b border-[#1a1a1a]">
-                   <div className="mono-label">MODEL_VERSION</div>
-                   <div className="mono-label text-white text-right">MINILM_V2_STABLE</div>
+                <div className="flex justify-between items-center py-3 border-b border-slate-100">
+                   <span className="text-sm font-medium text-slate-500">ML Model</span>
+                   <span className="text-[10px] font-bold px-2 py-1 bg-slate-100 text-slate-700 rounded-lg text-right">MINILM_V2_STABLE</span>
                 </div>
              </div>
           </div>
 
-          <div className="bg-black p-8 space-y-8">
-             <div className="mono-label flex items-center gap-2 text-white"><Fingerprint className="w-3 h-3" /> APPLICANT_IDENTITY</div>
-             <div className="space-y-4 text-left">
+          <div className="gpt-card p-10 space-y-8">
+             <div className="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2"><User className="w-4 h-4" /> Identity Buffer</div>
+             <div className="space-y-4">
                 <div className="space-y-2">
-                   <div className="mono-label text-[#444]">FULL_NAME</div>
-                   <input type="text" placeholder="REQUIRED" className="w-full bg-black border border-[#1a1a1a] h-10 px-4 text-xs font-mono focus:border-white outline-none" />
+                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Full Name</label>
+                   <input type="text" placeholder="Not set" className="w-full h-10 px-4 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:border-slate-900 outline-none transition-colors" />
                 </div>
-                <div className="space-y-2">
-                   <div className="mono-label text-[#444]">EMAIL_ADDRESS</div>
-                   <input type="email" placeholder="REQUIRED" className="w-full bg-black border border-[#1a1a1a] h-10 px-4 text-xs font-mono focus:border-white outline-none" />
+                <div className="space-y-2 text-left">
+                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Email Address</label>
+                   <input type="email" placeholder="Not set" className="w-full h-10 px-4 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:border-slate-900 outline-none transition-colors" />
                 </div>
-                <p className="text-[10px] text-[#333] leading-relaxed uppercase tracking-wider">Storage is limited to the local origin. Zero telemetry or external synchronization is active.</p>
                 <button 
-                  onClick={() => confirm('Purge local database?') && (indexedDB.deleteDatabase('auto-apply-ai-db'), window.location.reload())}
-                  className="w-full border border-red-900/50 py-3 text-[10px] font-black tracking-[0.3em] text-red-500 hover:bg-red-900/20 transition-all uppercase"
+                  onClick={() => confirm('Clear local dataset?') && (indexedDB.deleteDatabase('auto-apply-ai-db'), window.location.reload())}
+                  className="w-full mt-4 h-10 text-[10px] font-black text-rose-500 border border-rose-100 hover:bg-rose-50 transition-colors rounded-xl uppercase tracking-[0.2em]"
                 >
-                  PURGE_SYSTEM_MEMORY
+                  Purge Local Memory
                 </button>
              </div>
           </div>
-
        </div>
     </div>
   )

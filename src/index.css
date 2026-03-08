@@ -4,47 +4,72 @@
 
 @layer base {
   :root {
-    --bg: #000000;
-    --border: #1a1a1a;
-    --text-muted: #666666;
-    --accent: #ffffff;
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary: 220.9 39.3% 11%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 224 71.4% 4.1%;
+    --radius: 0.75rem;
   }
 
-  body {
-    @apply bg-black text-white antialiased selection:bg-white selection:text-black;
-    font-family: 'Inter', -apple-system, sans-serif;
+  .dark {
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 210 20% 98%;
+    --primary-foreground: 220.9 39.3% 11%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 216 12.2% 83.9%;
   }
 }
 
-@layer components {
-  .cell-border {
-    @apply border border-[#1a1a1a];
-  }
-  
-  .mono-label {
-    @apply font-mono text-[10px] tracking-tighter uppercase text-[#666];
-  }
-
-  .nav-item {
-    @apply px-4 py-2 text-[11px] font-medium tracking-tight text-[#666] transition-colors hover:text-white;
-  }
-
-  .nav-item.active {
-    @apply text-white border-b-2 border-white;
-  }
-
-  .btn-primary {
-    @apply bg-white text-black px-4 py-2 text-[11px] font-bold uppercase tracking-wider hover:bg-[#ccc] transition-colors;
-  }
-
-  .btn-secondary {
-    @apply border border-[#1a1a1a] text-white px-4 py-2 text-[11px] font-bold uppercase tracking-wider hover:bg-[#111] transition-colors;
-  }
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
 }
 
-/* Grain Effect */
-.bg-grain {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Cfilter id='noiseFilter'%3%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3%3C/filter%3%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3%3C/svg%3");
-  opacity: 0.03;
-  pointer-events: none;
+.gpt-card {
+  @apply bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300;
+}
+
+.nav-link {
+  @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900;
+}
+
+.nav-link.active {
+  @apply bg-white shadow-sm text-slate-900 border border-slate-200;
+}
+
+.btn-gpt-primary {
+  @apply bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2;
+}
+
+.btn-gpt-secondary {
+  @apply bg-white border border-slate-200 text-slate-900 px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center gap-2;
+}
+
+.btn-gpt-apply {
+  @apply bg-[#10a37f] text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#1a7f64] transition-all active:scale-95 flex items-center justify-center gap-2;
 }
