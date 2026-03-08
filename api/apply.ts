@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import chromium from '@sparticuz/chromium';
 import { chromium as playwright } from 'playwright-core';
+import path from 'path';
 
 export const maxDuration = 60; // 60s for Hobby tier
 
@@ -23,11 +24,17 @@ export default async function handler(
     // 1. Initialize Headless Browser (optimized for Vercel/Lambda)
     const executablePath = await chromium.executablePath();
     
+    // Fix for missing libnss3.so / libnspr4.so on Vercel
+    if (process.env.VERCEL) {
+      const execDir = path.dirname(executablePath);
+      process.env.LD_LIBRARY_PATH = `${execDir}:${process.env.LD_LIBRARY_PATH || ""}`;
+    }
+
     // Sometimes chromium is busy being extracted/prepared
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 800));
 
     browser = await playwright.launch({
-      args: chromium.args,
+      args: [...chromium.args, "--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu"],
       executablePath,
       headless: !!chromium.headless,
     });
