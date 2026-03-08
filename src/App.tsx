@@ -194,23 +194,6 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
   const [selected, setSelected] = useState<any | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const robustFetch = async (url: string) => {
-    // List of proxies to try
-    const proxies = [
-      (u: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-      (u: string) => `https://cors-anywhere.herokuapp.com/${u}`, // Note: might need opt-in
-      (u: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
-    ];
-
-    for (const proxyFn of proxies) {
-      try {
-        const res = await fetch(proxyFn(url)).catch(() => null);
-        if (res && res.ok) return res;
-      } catch (e) { continue; }
-    }
-    return null;
-  }
-
   const handleSearch = async () => {
     if (!query) return;
     setIsSearching(true);
@@ -218,61 +201,12 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
     try {
       const queryEmbedding = await getEmbedding(query);
       
-      const sources = [
-        { name: 'Source Alpha', url: `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=45759795&app_key=943e061849f50e8081f9a1240e340c23&what=${encodeURIComponent(query)}&where=${encodeURIComponent(location)}&results_per_page=15&content-type=application/json` },
-        { name: 'Source Beta', url: `https://jobdatafeeds.com/job-api/job-postings/search?job_title=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}` },
-        { name: 'Source Gamma', url: `https://jobicy.com/jobs-rss-feed?query=${encodeURIComponent(query)}`, type: 'xml' },
-        { name: 'Source Delta', url: `https://okjob.io/api/job-listings?keyword=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}` }
-      ];
-
-      const fetchResults = await Promise.all(sources.map(async (s) => {
-        try {
-          const res = await robustFetch(s.url);
-          if (!res) return [];
-          
-          if (s.type === 'xml') {
-            const text = await res.text();
-            const xml = new DOMParser().parseFromString(text, "text/xml");
-            return Array.from(xml.querySelectorAll("item")).map((item, i) => ({
-              id: `src-c-${i}-${Date.now()}`,
-              title: item.querySelector("title")?.textContent || "",
-              company: "Remote Verified",
-              location: "Global",
-              salary: "Market Rate",
-              description: item.querySelector("description")?.textContent?.replace(/<\/?[^>]+(>|$)/g, "") || "",
-              url: item.querySelector("link")?.textContent || "#",
-              source: s.name
-            }));
-          }
-
-          const d = await res.json();
-          if (s.name === 'Source Alpha') return (d.results || []).map((j: any) => ({
-            id: `src-a-${j.id}`,
-            title: j.title.replace(/<\/?[^>]+(>|$)/g, ""),
-            company: j.company.display_name,
-            location: j.location.display_name,
-            salary: j.salary_min ? `$${Math.round(j.salary_min/1000)}k+` : "Market Rate",
-            description: j.description.replace(/<\/?[^>]+(>|$)/g, ""),
-            url: j.redirect_url,
-            source: s.name
-          }));
-          if (s.name === 'Source Delta') return (d.job_listings || d || []).map((j: any, i: number) => ({
-            id: `src-d-${j.job_id || i}-${Date.now()}`,
-            title: j.title || j.job_title,
-            company: j.company || "Direct Hiring",
-            location: j.location || "Remote",
-            salary: j.salary || "Market Rate",
-            description: j.description || j.job_description || "",
-            url: `https://okjob.io/jobs/${j.job_id}`,
-            source: s.name,
-            canAutoApply: true
-          }));
-          return [];
-        } catch { return []; }
-      }));
+      const res = await fetch(`/api/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`).catch(() => null);
       
-      let combined = fetchResults.flat();
-      if (combined.length === 0) {
+      let combined = [];
+      if (res && res.ok) {
+        combined = await res.json();
+      } else {
         combined = [
           { id: 'f1', title: 'Full Stack Developer', company: 'Linear', location: 'Remote', salary: "$180k+", description: 'Engineering functional systems.', url: '#', source: 'Internal' },
           { id: 'f2', title: 'Product Architect', company: 'Vercel', location: 'Remote', salary: "$200k+", description: 'Building the next web framework.', url: '#', source: 'Internal' }
