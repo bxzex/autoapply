@@ -453,6 +453,7 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
   const [step, setStep] = useState(0)
   const [isDone, setIsDone] = useState(false)
   const [isAutomating, setIsAutomating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [screenshot, setScreenshot] = useState<string | null>(null)
 
   useEffect(() => {
@@ -474,6 +475,7 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
 
   const handleFinalStep = async () => {
     setIsAutomating(true);
+    setError(null);
     await saveApplication({
       id: `app-${j.id}-${Date.now()}`,
       jobId: j.id,
@@ -494,22 +496,29 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
           jobUrl: j.url,
           firstName: profile?.firstName,
           lastName: profile?.lastName,
-          email: profile?.email,
-          resumeText: profile?.resumeText
+          email: profile?.email
         })
       });
+      
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || 'Bridge connection failed');
+      }
+
       const data = await res.json();
       if (data.screenshot) setScreenshot(`data:image/jpeg;base64,${data.screenshot}`);
-    } catch (err) {
-      console.error('Automation error:', err);
-    } finally {
-      setIsAutomating(false);
+      
       onApply();
-      // Brief delay to see screenshot
       setTimeout(() => {
         onClose();
         window.open(j.url, '_blank');
       }, screenshot ? 2000 : 500);
+
+    } catch (err: any) {
+      console.error('Automation error:', err);
+      setError(err.message || 'The automation bridge encountered a critical failure. Manual application required.');
+    } finally {
+      setIsAutomating(false);
     }
   }
 
@@ -521,37 +530,49 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
           <div className="p-12 md:p-16 space-y-12 flex-1 border-r border-slate-50">
             <div className="flex justify-between items-start">
               <div className="w-16 h-16 bg-[#0f172a] rounded-3xl flex items-center justify-center shadow-2xl shadow-slate-200">
-                 {isAutomating ? <Loader2 className="w-8 h-8 text-white animate-spin" /> : isDone ? <CheckCircle2 className="w-8 h-8 text-emerald-400" /> : <Zap className="w-8 h-8 text-white animate-pulse" />}
+                 {error ? <AlertCircle className="w-8 h-8 text-rose-400" /> : isAutomating ? <Loader2 className="w-8 h-8 text-white animate-spin" /> : isDone ? <CheckCircle2 className="w-8 h-8 text-emerald-400" /> : <Zap className="w-8 h-8 text-white animate-pulse" />}
               </div>
               <button onClick={onClose} className="p-2 -mr-2 text-slate-300 hover:text-slate-900 transition-colors" disabled={isAutomating}><X size={24} /></button>
             </div>
 
             <div className="space-y-2 text-left">
               <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">
-                {isAutomating ? "Bridge Active" : isDone ? "Protocol Ready" : "Initializing..."}
+                {error ? "Bridge Failure" : isAutomating ? "Bridge Active" : isDone ? "Protocol Ready" : "Initializing..."}
               </h3>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{j.company}</p>
             </div>
 
-            <div className="space-y-6">
-              {steps.map((s, i) => (
-                <div key={i} className={cn(
-                  "flex items-center gap-4 transition-all duration-500",
-                  step >= i ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
-                )}>
-                  <div className={cn(
-                    "w-1 h-1 rounded-full",
-                    step > i ? "bg-emerald-500" : step === i ? "bg-slate-900 animate-ping" : "bg-slate-100"
-                  )} />
-                  <span className={cn(
-                    "text-[10px] font-black uppercase tracking-[0.3em]",
-                    step === i ? "text-slate-900" : "text-slate-200"
-                  )}>{s}</span>
-                </div>
-              ))}
-            </div>
+            {error ? (
+              <div className="p-8 bg-rose-50 border border-rose-100 rounded-3xl space-y-4">
+                <p className="text-xs font-bold text-rose-600 leading-relaxed uppercase tracking-widest">{error}</p>
+                <button 
+                  onClick={() => window.open(j.url, '_blank')}
+                  className="text-[10px] font-black text-rose-400 hover:text-rose-900 underline transition-colors uppercase tracking-widest"
+                >
+                  Continue to Portal Manually
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {steps.map((s, i) => (
+                  <div key={i} className={cn(
+                    "flex items-center gap-4 transition-all duration-500",
+                    step >= i ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+                  )}>
+                    <div className={cn(
+                      "w-1 h-1 rounded-full",
+                      step > i ? "bg-emerald-500" : step === i ? "bg-slate-900 animate-ping" : "bg-slate-100"
+                    )} />
+                    <span className={cn(
+                      "text-[10px] font-black uppercase tracking-[0.3em]",
+                      step === i ? "text-slate-900" : "text-slate-200"
+                    )}>{s}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
-            {isDone && (
+            {isDone && !error && (
               <div className="animate-in slide-in-from-bottom-4 duration-500 pt-4">
                 <button 
                   onClick={handleFinalStep}

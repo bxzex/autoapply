@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import chromium from '@sparticuz/chromium-min';
+import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
 
 export const maxDuration = 60; 
@@ -20,29 +20,42 @@ export default async function handler(
 
   let browser = null;
   try {
-    // 1. Setup Robust Browser Bridge
-    const executablePath = await chromium.executablePath(
-      'https://github.com/Sparticuz/chromium/releases/download/v132.0.0/chromium-v132.0.0-pack.tar'
-    );
+    // 1. Configure Browser Bridge
+    // Note: Version 123.0.1 is very stable for Vercel environments
+    const executablePath = await chromium.executablePath();
 
     browser = await puppeteer.launch({
-      args: [...chromium.args, "--hide-scrollbars", "--disable-web-security"],
+      args: [...chromium.args, "--hide-scrollbars", "--disable-web-security", "--no-sandbox"],
       defaultViewport: chromium.defaultViewport,
       executablePath,
       headless: chromium.headless,
     });
 
     const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');
 
-    // 2. Navigation Protocol
+    // 2. Protocol Navigation
+    // We use networkidle2 to ensure the page has somewhat loaded its forms
     await page.goto(jobUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
     // 3. Automated Form Preparation
     try {
-      if (firstName) await page.type('input[name*="first"], input[name*="given"]', firstName).catch(() => null);
-      if (lastName) await page.type('input[name*="last"], input[name*="family"]', lastName).catch(() => null);
-      if (email) await page.type('input[type="email"], input[name*="email"]', email).catch(() => null);
+      // Find and fill common fields
+      const inputs = await page.$$('input');
+      for (const input of inputs) {
+        const name = await (await input.getProperty('name')).jsonValue() as string;
+        const type = await (await input.getProperty('type')).jsonValue() as string;
+        
+        const lowerName = name?.toLowerCase() || '';
+        
+        if (firstName && (lowerName.includes('first') || lowerName.includes('given'))) {
+          await input.type(firstName).catch(() => null);
+        } else if (lastName && (lowerName.includes('last') || lowerName.includes('family'))) {
+          await input.type(lastName).catch(() => null);
+        } else if (email && (type === 'email' || lowerName.includes('email'))) {
+          await input.type(email).catch(() => null);
+        }
+      }
     } catch (err) {
       console.warn('Protocol Injection Error:', err);
     }

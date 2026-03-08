@@ -51,10 +51,11 @@ export default async function handler(
         const res = await fetch(`https://www.arbeitnow.com/api/job-board-api`, { signal: AbortSignal.timeout(6000) });
         if (!res.ok) return [];
         const d = await res.json();
-        const filtered = d.data.filter((j: any) => 
-          j.title.toLowerCase().includes(query.toLowerCase()) || 
-          j.description.toLowerCase().includes(query.toLowerCase())
-        );
+        const filtered = d.data.filter((j: any) => {
+          const mQuery = j.title.toLowerCase().includes(query.toLowerCase()) || j.description.toLowerCase().includes(query.toLowerCase());
+          const mLocation = location ? j.location.toLowerCase().includes(location.toLowerCase()) : true;
+          return mQuery && mLocation;
+        });
         return filtered.slice(0, 10).map((j: any, i: number) => ({
           id: `arb-${i}-${ts}`,
           title: j.title,
@@ -98,10 +99,11 @@ export default async function handler(
         const res = await fetch(`https://jobicy.com/api/v2/remote-jobs?count=20`, { signal: AbortSignal.timeout(6000) });
         if (!res.ok) return [];
         const d = await res.json();
-        const filtered = (d.jobs || []).filter((j: any) => 
-          j.jobTitle.toLowerCase().includes(query.toLowerCase()) || 
-          j.jobDescription.toLowerCase().includes(query.toLowerCase())
-        );
+        const filtered = (d.jobs || []).filter((j: any) => {
+          const mQuery = j.jobTitle.toLowerCase().includes(query.toLowerCase()) || j.jobDescription.toLowerCase().includes(query.toLowerCase());
+          const mLocation = location ? j.jobGeo.toLowerCase().includes(location.toLowerCase()) : true;
+          return mQuery && mLocation;
+        });
         return filtered.map((j: any) => ({
           id: `jby-${j.id}-${ts}`,
           title: j.jobTitle,

@@ -18,7 +18,7 @@
     "react-dom": "^18.2.0",
     "tailwind-merge": "^2.2.1",
     "puppeteer-core": "^22.6.0",
-    "@sparticuz/chromium-min": "132.0.0"
+    "@sparticuz/chromium": "123.0.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.61",
