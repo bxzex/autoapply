@@ -38,9 +38,11 @@ export async function extractSkills(text: string) {
     'Rust', 'Go', 'Java', 'C++', 'Swift', 'Kotlin', 'Tailwind', 'CSS', 'HTML'
   ];
   
-  const skills = commonSkills.filter(skill => 
-    new RegExp(`\\b${skill}\\b`, 'i').test(text)
-  );
+  const skills = commonSkills.filter(skill => {
+    // Escape special characters like ++ in C++
+    const escapedSkill = skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`\\b${escapedSkill}\\b`, 'i').test(text);
+  });
   
   return skills;
 }

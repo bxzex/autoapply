@@ -203,7 +203,9 @@ function SearchSection({ profile }: { profile: UserProfile | null }) {
     try {
       const queryEmbedding = await getEmbedding(query);
       
-      const res = await fetch(`/api/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`).catch(() => null);
+      const res = await fetch(`/api/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`, {
+        signal: AbortSignal.timeout(10000) // 10s client-side timeout
+      }).catch(() => null);
       
       let combined = [];
       if (res && res.ok) {
