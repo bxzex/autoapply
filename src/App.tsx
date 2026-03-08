@@ -109,6 +109,7 @@ function App() {
 
 function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | null, onProfileUpdate: (p: UserProfile) => void }) {
   const [isParsing, setIsParsing] = useState(false)
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,6 +117,8 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
     if (!file) return;
     setIsParsing(true);
     try {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(URL.createObjectURL(file));
       const text = await extractTextFromPDF(file);
       const skills = await extractSkills(text);
       const embedding = await getEmbedding(text);
@@ -127,7 +130,7 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
   }
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-3xl space-y-12 text-left">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-4xl space-y-12 text-left">
       <div className="space-y-4 text-left">
         <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 text-left">Application Profile</h2>
         <p className="text-xl text-slate-500 leading-relaxed max-w-2xl text-left">
@@ -135,57 +138,70 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
         </p>
       </div>
 
-      <div 
-        onClick={() => inputRef.current?.click()}
-        className={cn(
-          "gpt-card p-16 flex flex-col items-center justify-center text-center cursor-pointer group hover:bg-white/50",
-          isParsing && "pointer-events-none opacity-50 bg-slate-50"
-        )}
-      >
-        <input type="file" className="hidden" ref={inputRef} onChange={handleUpload} accept=".pdf" />
-        <div className="w-20 h-20 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-8 group-hover:scale-105 transition-all duration-500 group-hover:bg-[#0f172a] group-hover:text-white">
-          {isParsing ? <Loader2 className="w-10 h-10 animate-spin" /> : <Plus className="w-10 h-10" />}
-        </div>
-        <div className="space-y-2 text-center flex flex-col items-center">
-          <h3 className="text-2xl font-bold text-slate-900 text-center">{isParsing ? "Analyzing Document..." : "Load Resume"}</h3>
-          <p className="text-slate-400 font-medium tracking-tight text-center italic text-sm">Processing happens on your device</p>
-        </div>
-      </div>
-
-      {profile && (
-        <div className="gpt-card overflow-hidden text-left">
-          <div className="px-10 py-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
-            <div className="space-y-1 text-left">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Active File</span>
-              <h4 className="font-bold text-slate-900 text-left">{profile.name}</h4>
-            </div>
-            <span className="px-4 py-1.5 bg-slate-100 text-slate-700 text-[10px] font-bold rounded-full border border-slate-200 flex items-center gap-1.5 uppercase tracking-wider">
-              <CheckCircle2 size={12} /> Local Sync OK
-            </span>
+      {!profile ? (
+        <div 
+          onClick={() => inputRef.current?.click()}
+          className={cn(
+            "gpt-card p-16 flex flex-col items-center justify-center text-center cursor-pointer group hover:bg-white/50",
+            isParsing && "pointer-events-none opacity-50 bg-slate-50"
+          )}
+        >
+          <input type="file" className="hidden" ref={inputRef} onChange={handleUpload} accept=".pdf" />
+          <div className="w-20 h-20 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-8 group-hover:scale-105 transition-all duration-500 group-hover:bg-[#0f172a] group-hover:text-white">
+            {isParsing ? <Loader2 className="w-10 h-10 animate-spin" /> : <Plus className="w-10 h-10" />}
           </div>
-          <div className="p-10 space-y-12">
-             <div className="space-y-6 text-left">
-               <div className="space-y-4 text-left">
-                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Keywords Identified</h4>
-                 <div className="flex flex-wrap gap-2 text-left">
-                   {profile.skills.map(s => (
-                     <span key={s} className="px-3 py-1 bg-slate-50 border border-slate-200 text-slate-700 text-[11px] font-bold rounded-lg uppercase tracking-tight">
-                       {s}
-                     </span>
-                   ))}
-                 </div>
-               </div>
+          <div className="space-y-2 text-center flex flex-col items-center">
+            <h3 className="text-2xl font-bold text-slate-900 text-center">{isParsing ? "Analyzing Document..." : "Load Resume"}</h3>
+            <p className="text-slate-400 font-medium tracking-tight text-center italic text-sm">Processing happens on your device</p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 text-left items-start">
+          <div className="space-y-8 text-left">
+             <div className="gpt-card overflow-hidden text-left">
+                <div className="px-10 py-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+                  <div className="space-y-1 text-left">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Active File</span>
+                    <h4 className="font-bold text-slate-900 text-left">{profile.name}</h4>
+                  </div>
+                  <button onClick={() => inputRef.current?.click()} className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Replace</button>
+                  <input type="file" className="hidden" ref={inputRef} onChange={handleUpload} accept=".pdf" />
+                </div>
+                <div className="p-10 space-y-10">
+                   <div className="space-y-4 text-left">
+                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Keywords Identified</h4>
+                     <div className="flex flex-wrap gap-2 text-left">
+                       {profile.skills.map(s => (
+                         <span key={s} className="px-3 py-1 bg-slate-50 border border-slate-200 text-slate-700 text-[11px] font-bold rounded-lg uppercase tracking-tight">
+                           {s}
+                         </span>
+                       ))}
+                     </div>
+                   </div>
 
-               <div className="space-y-4 text-left pt-10 border-t border-slate-100">
-                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Full Dataset Extraction</h4>
-                 <div className="bg-white p-10 rounded-[2.5rem] border border-slate-200/60 max-h-96 overflow-y-auto shadow-sm">
-                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap text-left font-sans">
-                      {profile.resumeText}
-                    </p>
-                 </div>
-                 <p className="text-[10px] text-slate-400 italic text-left">Everything shown above has been vectorized locally. The system 'knows' this entire document for matching purposes.</p>
-               </div>
+                   <div className="space-y-4 text-left pt-10 border-t border-slate-100">
+                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Experience Profile</h4>
+                     <div className="bg-white p-8 rounded-[2rem] border border-slate-200/60 max-h-80 overflow-y-auto shadow-sm">
+                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap text-left font-sans">
+                          {profile.resumeText.slice(0, 1500)}...
+                        </p>
+                     </div>
+                     <p className="text-[10px] text-slate-400 italic text-left">This data has been vectorized locally for matching. High-fidelity extraction complete.</p>
+                   </div>
+                </div>
              </div>
+          </div>
+
+          <div className="gpt-card h-full min-h-[600px] overflow-hidden flex flex-col border-slate-200/60">
+             <div className="px-10 py-8 border-b border-slate-100 bg-slate-50/30 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Full Document View</span>
+             </div>
+             {pdfUrl ? (
+               <iframe src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`} className="flex-1 w-full border-none h-full grayscale-[0.2] opacity-90" />
+             ) : (
+               <div className="flex-1 flex items-center justify-center text-slate-300 italic text-sm">Preview only available after upload</div>
+             )}
           </div>
         </div>
       )}

@@ -3,6 +3,13 @@ import * as pdfjs from 'pdfjs-dist'
 // CRITICAL: Version must match package.json exactly (4.4.168)
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`
 
+function cleanText(text: string): string {
+  return text
+    .replace(/\s+/g, ' ') // Collapse extra spaces
+    .replace(/([a-zA-Z])\s(?=[a-zA-Z]\b)/g, '$1') // Fix spaced-out letters (e.g., "C O N T A C T")
+    .trim();
+}
+
 export async function extractTextFromPDF(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer()
   const loadingTask = pdfjs.getDocument({ data: arrayBuffer })
@@ -18,5 +25,5 @@ export async function extractTextFromPDF(file: File): Promise<string> {
     fullText += pageText + '\n'
   }
   
-  return fullText
+  return cleanText(fullText)
 }
