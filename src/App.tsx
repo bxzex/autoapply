@@ -18,7 +18,8 @@ import {
   AlertCircle,
   Activity,
   Zap,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -455,8 +456,8 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
   const [screenshot, setScreenshot] = useState<string | null>(null)
 
   useEffect(() => {
-    if (step < 3) {
-      const t = setTimeout(() => setStep(s => s + 1), 1000)
+    if (step < 4) {
+      const t = setTimeout(() => setStep(s => s + 1), 800)
       return () => clearTimeout(t)
     } else {
       setIsDone(true)
@@ -464,10 +465,11 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
   }, [step])
 
   const steps = [
-    "Synchronizing Identity...",
-    "Injecting Resume Dataset...",
-    "Securing Application Portal...",
-    "Ready for Verification"
+    "Compiling Experience Matrix...",
+    "Optimizing Vector Profile...",
+    "Constructing Application Layer...",
+    "Securing Handshake Bridge...",
+    "Identity Verification Ready"
   ]
 
   const handleFinalStep = async () => {
@@ -503,7 +505,7 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
     } finally {
       setIsAutomating(false);
       onApply();
-      // Keep modal open briefly to show the screenshot if it arrived
+      // Brief delay to see screenshot
       setTimeout(() => {
         onClose();
         window.open(j.url, '_blank');
@@ -521,14 +523,14 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
               <div className="w-16 h-16 bg-[#0f172a] rounded-3xl flex items-center justify-center shadow-2xl shadow-slate-200">
                  {isAutomating ? <Loader2 className="w-8 h-8 text-white animate-spin" /> : isDone ? <CheckCircle2 className="w-8 h-8 text-emerald-400" /> : <Zap className="w-8 h-8 text-white animate-pulse" />}
               </div>
-              <button onClick={onClose} className="text-slate-300 hover:text-slate-900 transition-colors" disabled={isAutomating}><AlertCircle size={24} /></button>
+              <button onClick={onClose} className="p-2 -mr-2 text-slate-300 hover:text-slate-900 transition-colors" disabled={isAutomating}><X size={24} /></button>
             </div>
 
             <div className="space-y-2 text-left">
-              <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">
-                {isAutomating ? "Automation Active" : isDone ? "Identity Ready" : "Processing..."}
+              <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">
+                {isAutomating ? "Bridge Active" : isDone ? "Protocol Ready" : "Initializing..."}
               </h3>
-              <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.3em]">{j.company}</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{j.company}</p>
             </div>
 
             <div className="space-y-6">
@@ -538,12 +540,12 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
                   step >= i ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
                 )}>
                   <div className={cn(
-                    "w-1.5 h-1.5 rounded-full",
+                    "w-1 h-1 rounded-full",
                     step > i ? "bg-emerald-500" : step === i ? "bg-slate-900 animate-ping" : "bg-slate-100"
                   )} />
                   <span className={cn(
-                    "text-[10px] font-black uppercase tracking-[0.2em]",
-                    step === i ? "text-slate-900" : "text-slate-300"
+                    "text-[10px] font-black uppercase tracking-[0.3em]",
+                    step === i ? "text-slate-900" : "text-slate-200"
                   )}>{s}</span>
                 </div>
               ))}
@@ -554,12 +556,12 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
                 <button 
                   onClick={handleFinalStep}
                   disabled={isAutomating}
-                  className="w-full h-20 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[1.5rem] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.3em] shadow-xl shadow-emerald-200 transition-all active:scale-95 disabled:opacity-50"
+                  className="w-full h-20 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[2rem] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.3em] shadow-xl shadow-emerald-200 transition-all active:scale-95 disabled:opacity-50"
                 >
-                  {isAutomating ? "Processing Portal..." : "Execute Auto-Apply"} <ExternalLink size={18} />
+                  {isAutomating ? "Bridging..." : "Execute Protocol"} <ExternalLink size={18} />
                 </button>
                 <p className="mt-6 text-[10px] text-slate-400 font-bold text-center leading-relaxed">
-                  {isAutomating ? "Our serverless agent is initializing the portal..." : `Your identity (${profile?.firstName}) is ready. Auto-apply will prepare the form for you.`}
+                  {isAutomating ? "Initializing headless viewport session..." : `Identity verified. Click execute to begin automated preparation.`}
                 </p>
               </div>
             )}

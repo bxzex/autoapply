@@ -17,8 +17,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^2.2.1",
-    "playwright-core": "^1.40.0",
-    "@sparticuz/chromium": "^119.0.0"
+    "playwright-core": "1.50.1",
+    "@sparticuz/chromium": "132.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.61",
