@@ -91,10 +91,6 @@ function App() {
               <Heart size={12} fill="currentColor" />
               Support Project
             </a>
-            <div className="px-3 py-1.5 rounded-full text-[10px] font-bold tracking-tight border bg-white text-slate-500 border-slate-200 flex items-center gap-2 uppercase">
-              <div className="w-1 h-1 rounded-full bg-emerald-500" />
-              Service Online
-            </div>
           </div>
         </div>
       </header>
@@ -248,8 +244,7 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
 
           <div className="gpt-card h-full min-h-[600px] overflow-hidden flex flex-col border-slate-200/60">
              <div className="px-10 py-8 border-b border-slate-100 bg-slate-50/30 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Full Document View</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Your resume</span>
              </div>
              {pdfUrl ? (
                <iframe src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`} className="flex-1 w-full border-none h-full grayscale-[0.2] opacity-90" />
@@ -583,7 +578,7 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
                   )}>
                     <div className={cn(
                       "w-1 h-1 rounded-full",
-                      step > i ? "bg-emerald-500" : step === i ? "bg-slate-900 animate-ping" : "bg-slate-100"
+                      step > i ? "bg-emerald-500" : step === i ? "bg-slate-900" : "bg-slate-100"
                     )} />
                     <span className={cn(
                       "text-[10px] font-black uppercase tracking-[0.3em]",
@@ -631,7 +626,7 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
                      {isAutomating ? (
                        <>
                          <div className="w-12 h-12 border-2 border-slate-100 border-t-slate-900 rounded-full animate-spin" />
-                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Initializing Headless Viewport...</span>
+                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Opening the browser…</span>
                        </>
                      ) : (
                        <>
@@ -649,10 +644,9 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
              </div>
              
              <div className="mt-4 px-2 flex justify-between items-center">
-                <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Portal Render Engine v1.0</span>
+                <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Browser preview</span>
                 <div className="flex items-center gap-1">
-                   <div className={cn("w-1.5 h-1.5 rounded-full", isAutomating ? "bg-emerald-500 animate-pulse" : "bg-slate-200")} />
-                   <span className="text-[8px] font-bold text-slate-300 uppercase">{isAutomating ? "Live" : "Idle"}</span>
+                   <span className="text-[8px] font-bold text-slate-300 uppercase">{isAutomating ? "Running" : "Idle"}</span>
                 </div>
              </div>
           </div>
