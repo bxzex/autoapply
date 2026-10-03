@@ -46,30 +46,30 @@
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
-  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  @apply bg-[#f6f5f2] text-slate-900 antialiased;
+  font-family: 'Libre Franklin', -apple-system, system-ui, sans-serif;
 }
 
 .gpt-card {
-  @apply bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300;
+  @apply bg-white border border-slate-200 rounded-md;
 }
 
 .nav-link {
-  @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900;
+  @apply px-3 py-2 text-sm text-slate-500 border-b-2 border-transparent hover:text-slate-900 whitespace-nowrap;
 }
 
 .nav-link.active {
-  @apply bg-white shadow-sm text-slate-900 border border-slate-200;
+  @apply text-slate-900 border-[#b4532a];
 }
 
 .btn-gpt-primary {
-  @apply bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2;
+  @apply bg-slate-900 text-white px-5 py-2 rounded-md text-sm font-semibold hover:bg-slate-700 flex items-center justify-center gap-2;
 }
 
 .btn-gpt-secondary {
-  @apply bg-white border border-slate-200 text-slate-900 px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center gap-2;
+  @apply bg-white border border-slate-300 text-slate-900 px-5 py-2 rounded-md text-sm font-semibold hover:bg-slate-50 flex items-center justify-center gap-2;
 }
 
 .btn-gpt-apply {
-  @apply bg-[#10a37f] text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#1a7f64] transition-all active:scale-95 flex items-center justify-center gap-2;
+  @apply bg-[#b4532a] text-white px-5 py-2 rounded-md text-sm font-semibold hover:bg-[#953f1d] flex items-center justify-center gap-2;
 }

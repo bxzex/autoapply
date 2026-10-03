@@ -57,16 +57,11 @@ function App() {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] flex flex-col font-sans selection:bg-slate-900 selection:text-white">
       {/* Refined Header */}
-      <header className="h-16 border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-50">
+      <header className="h-16 border-b border-slate-200 bg-white sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
-          <div className="flex items-center gap-2.5 group cursor-default text-left">
-            <div className="w-9 h-9 bg-[#0f172a] rounded-xl flex items-center justify-center shadow-sm">
-              <Briefcase className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold tracking-tight text-lg text-slate-900">AutoApply</span>
-          </div>
+          <span className="font-bold text-lg text-slate-900 shrink-0">Auto<span className="text-[#b4532a]">Apply</span></span>
 
-          <div className="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200/50">
+          <div className="flex items-center gap-1 overflow-x-auto">
             <button onClick={() => setActiveTab('profile')} className={cn("nav-link", activeTab === 'profile' && "active")}>
               Profile
             </button>
@@ -81,15 +76,14 @@ function App() {
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-3">
             <a 
               href="https://buy.stripe.com/9B6eVfd9E6OC3sr7cEaAw03" 
               target="_blank" 
               rel="noreferrer"
-              className="px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest bg-rose-50 text-rose-500 border border-rose-100 flex items-center gap-2 uppercase hover:bg-rose-500 hover:text-white transition-all shadow-sm shadow-rose-100 active:scale-95"
+              className="text-sm text-slate-500 hover:text-slate-900 underline underline-offset-4"
             >
-              <Heart size={12} fill="currentColor" />
-              Support Project
+              Support the project
             </a>
           </div>
         </div>
@@ -102,24 +96,11 @@ function App() {
         {activeTab === 'config' && <ConfigSection profile={profile} onProfileUpdate={(p) => (setProfile(p), saveProfile(p))} />}
       </main>
 
-      <footer className="border-t border-slate-200 bg-white py-16">
-        <div className="max-w-6xl mx-auto px-6 text-left">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-12 text-center md:text-left">
-            <div className="space-y-4 text-left">
-              <p className="text-sm font-medium text-slate-400 text-left">
-                developed by <a href="https://bxzex.com" target="_blank" rel="noreferrer" className="text-slate-900 hover:underline font-bold lowercase">bxzex</a>
-              </p>
-              <div className="flex justify-center md:justify-start gap-6">
-                <a href="https://github.com/bxzex" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors"><Github size={20} /></a>
-                <a href="https://linkedin.com/in/bxzex/" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors"><Linkedin size={20} /></a>
-                <a href="https://instagram.com/bxzex" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors"><Instagram size={20} /></a>
-              </div>
-            </div>
-            <div className="flex flex-col items-center md:items-end gap-2 text-right">
-              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">Open Source Utility</span>
-              <span className="text-xs font-medium text-slate-400 flex items-center gap-2"><ShieldCheck size={14} className="text-slate-400" /> Secure Local Processing</span>
-            </div>
-          </div>
+      <footer className="border-t border-slate-200 bg-white py-6">
+        <div className="max-w-6xl mx-auto px-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500">
+          <span>© 2026 <a href="https://bxzex.com" target="_blank" rel="noreferrer" className="underline">bxzex</a></span>
+          <span>Listings from Adzuna and Arbeitnow</span>
+          <a href="https://github.com/bxzex/autoapply" target="_blank" rel="noreferrer" className="underline">Source on GitHub</a>
         </div>
       </footer>
     </div>
@@ -164,16 +145,16 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
       } as UserProfile);
     } catch (err) {
       console.error(err);
-      alert('Error parsing document. Ensure worker is initialized.');
+      alert('Could not read that PDF. Try exporting it again, or use a text-based PDF rather than a scan.');
     } finally { setIsParsing(false); }
   }
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-4xl space-y-12 text-left">
       <div className="space-y-4 text-left">
-        <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 text-left">Application Profile</h2>
+        <h2 className="text-3xl font-bold text-slate-900 text-left">Your resume</h2>
         <p className="text-xl text-slate-500 leading-relaxed max-w-2xl text-left">
-          Load your resume to initialize the system. Your data is processed locally and never stored on a server.
+          Upload a PDF. It is read in your browser and kept on this device; listings are ranked against it.
         </p>
       </div>
 
@@ -181,17 +162,17 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
         <div 
           onClick={() => inputRef.current?.click()}
           className={cn(
-            "gpt-card p-16 flex flex-col items-center justify-center text-center cursor-pointer group hover:bg-white/50",
+            "gpt-card p-12 flex flex-col items-center justify-center text-center cursor-pointer group hover:bg-white/50",
             isParsing && "pointer-events-none opacity-50 bg-slate-50"
           )}
         >
           <input type="file" className="hidden" ref={inputRef} onChange={handleUpload} accept=".pdf" />
-          <div className="w-20 h-20 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-8 group-hover:scale-105 transition-all duration-500 group-hover:bg-[#0f172a] group-hover:text-white">
+          <div className="w-20 h-20 bg-slate-100 rounded-md flex items-center justify-center mb-8 group-hover:scale-105 transition-all duration-500 group-hover:bg-[#0f172a] group-hover:text-white">
             {isParsing ? <Loader2 className="w-10 h-10 animate-spin" /> : <Plus className="w-10 h-10" />}
           </div>
           <div className="space-y-2 text-center flex flex-col items-center">
-            <h3 className="text-2xl font-bold text-slate-900 text-center">{isParsing ? "Analyzing Document..." : "Load Resume"}</h3>
-            <p className="text-slate-400 font-medium tracking-tight text-center italic text-sm">Processing happens on your device</p>
+            <h3 className="text-2xl font-bold text-slate-900 text-center">{isParsing ? "Reading your resume…" : "Upload resume (PDF)"}</h3>
+            <p className="text-slate-400 font-medium text-center text-sm">Click to choose a file</p>
           </div>
         </div>
       ) : (
@@ -200,18 +181,18 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
              <div className="gpt-card overflow-hidden text-left">
                 <div className="px-10 py-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
                   <div className="space-y-1 text-left">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Active File</span>
+                    <span className="text-xs font-bold text-slate-400 text-left">File</span>
                     <h4 className="font-bold text-slate-900 text-left">{profile.name}</h4>
                   </div>
-                  <button onClick={() => inputRef.current?.click()} className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Replace</button>
+                  <button onClick={() => inputRef.current?.click()} className="text-xs font-bold text-slate-400 hover:text-slate-900 transition-colors">Replace</button>
                   <input type="file" className="hidden" ref={inputRef} onChange={handleUpload} accept=".pdf" />
                 </div>
                 <div className="p-10 space-y-10">
                    <div className="space-y-4 text-left">
-                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Keywords Identified</h4>
+                     <h4 className="text-xs font-bold text-slate-400 text-left">Skills found</h4>
                      <div className="flex flex-wrap gap-2 text-left">
                        {profile.skills.map(s => (
-                         <span key={s} className="px-3 py-1 bg-slate-50 border border-slate-200 text-slate-700 text-[11px] font-bold rounded-lg uppercase tracking-tight">
+                         <span key={s} className="px-3 py-1 bg-slate-50 border border-slate-200 text-slate-700 text-[11px] font-bold rounded-lg">
                            {s}
                          </span>
                        ))}
@@ -220,23 +201,23 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
 
                    <div className="space-y-4 text-left pt-10 border-t border-slate-100">
                      <div className="flex justify-between items-center">
-                       <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] text-left">Experience Profile</h4>
+                       <h4 className="text-xs font-bold text-slate-400 text-left">Extracted text</h4>
                        <button 
                          onClick={() => {
                            navigator.clipboard.writeText(profile.resumeText);
-                           alert('Resume text copied to clipboard!');
+                           
                          }}
-                         className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest"
+                         className="text-xs font-bold text-slate-400 hover:text-slate-900 transition-colors"
                        >
                          Copy Text
                        </button>
                      </div>
-                     <div className="bg-white p-8 rounded-[2rem] border border-slate-200/60 max-h-80 overflow-y-auto shadow-sm">
+                     <div className="bg-white p-8 rounded-md border border-slate-200/60 max-h-80 overflow-y-auto shadow-sm">
                         <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap text-left font-sans">
                           {profile.resumeText.slice(0, 1500)}...
                         </p>
                      </div>
-                     <p className="text-[10px] text-slate-400 italic text-left">This data has been vectorized locally for matching. High-fidelity extraction complete.</p>
+                     <p className="text-xs text-slate-400 text-left">Shows the first 1,500 characters.</p>
                    </div>
                 </div>
              </div>
@@ -244,12 +225,12 @@ function ProfileSection({ profile, onProfileUpdate }: { profile: UserProfile | n
 
           <div className="gpt-card h-full min-h-[600px] overflow-hidden flex flex-col border-slate-200/60">
              <div className="px-10 py-8 border-b border-slate-100 bg-slate-50/30 flex items-center gap-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Your resume</span>
+                <span className="text-xs font-bold text-slate-400">Your resume</span>
              </div>
              {pdfUrl ? (
                <iframe src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`} className="flex-1 w-full border-none h-full grayscale-[0.2] opacity-90" />
              ) : (
-               <div className="flex-1 flex items-center justify-center text-slate-300 italic text-sm">Preview only available after upload</div>
+               <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Preview only available after upload</div>
              )}
           </div>
         </div>
@@ -283,7 +264,7 @@ function SearchSection({ profile, onApply }: { profile: UserProfile | null, onAp
       if (res && res.ok) {
         combined = await res.json();
       } else {
-        setError("Network error: Could not reach job sources.");
+        setError("Could not reach the job boards. Try again in a moment.");
         setIsSearching(false);
         return;
       }
@@ -320,7 +301,7 @@ function SearchSection({ profile, onApply }: { profile: UserProfile | null, onAp
       setResults(ranked.sort((a, b) => b.score - a.score))
     } catch (err) {
       console.error('Search error:', err);
-      setError("An unexpected error occurred during processing.");
+      setError("Something went wrong while ranking the results. Try again.");
     } finally { setIsSearching(false); }
   }
 
@@ -328,38 +309,38 @@ function SearchSection({ profile, onApply }: { profile: UserProfile | null, onAp
     <div className="animate-in fade-in duration-700 space-y-12 text-left">
       <div className="max-w-3xl space-y-8 text-left">
         <div className="space-y-4 text-left">
-          <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 italic text-left uppercase">Market Feed</h2>
+          <h2 className="text-3xl font-bold text-slate-900 text-left">Listings</h2>
           <p className="text-xl text-slate-500 leading-relaxed max-w-2xl text-left">
-            Query global listings from top aggregate sources. High-fidelity matching computed instantly.
+            Searches Adzuna (US) and Arbeitnow, then ranks each listing by how closely it matches your search and your resume.
           </p>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-3 p-3 bg-white rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/20 transition-all text-left">
+        <div className="flex flex-col md:flex-row gap-3 p-3 bg-white rounded-md border border-slate-200 text-left">
           <div className="flex-1 flex items-center px-6 gap-4 text-left">
-            <Search className="w-6 h-6 text-slate-300" />
+            <Search className="w-6 h-6 text-slate-400" />
             <input 
-              type="text" placeholder="Job title or stack..." 
-              className="bg-transparent border-none focus:ring-0 w-full h-14 text-slate-900 font-bold text-lg placeholder:text-slate-300"
+              type="text" placeholder="Job title or skill" 
+              className="bg-transparent border-none focus:ring-0 w-full h-14 text-slate-900 font-bold text-lg placeholder:text-slate-400"
               value={query} onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
             />
           </div>
-          <div className="flex items-center px-6 gap-4 border-l border-slate-100 hidden md:flex text-left">
-            <MapPin className="w-6 h-6 text-slate-300" />
+          <div className="flex items-center px-6 gap-4 md:border-l border-slate-100 text-left">
+            <MapPin className="w-6 h-6 text-slate-400" />
             <input 
-              type="text" placeholder="Region..." 
-              className="bg-transparent border-none focus:ring-0 w-32 h-14 text-slate-900 font-bold text-lg placeholder:text-slate-300 uppercase tracking-widest text-sm"
+              type="text" placeholder="City or remote" 
+              className="bg-transparent border-none focus:ring-0 w-32 h-14 text-slate-900 font-bold text-lg placeholder:text-slate-400 text-sm"
               value={location} onChange={e => setLocation(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
             />
           </div>
-          <button onClick={handleSearch} disabled={isSearching} className="btn-gpt-primary px-10 h-14 bg-[#0f172a] rounded-[1.8rem] hover:shadow-lg transition-all active:scale-95">
-            {isSearching ? <Loader2 className="w-6 h-6 animate-spin text-white" /> : "Run Query"}
+          <button onClick={handleSearch} disabled={isSearching} className="btn-gpt-primary px-10 h-14 bg-[#0f172a] rounded-md hover:shadow-lg transition-all active:scale-95">
+            {isSearching ? <Loader2 className="w-6 h-6 animate-spin text-white" /> : "Search"}
           </button>
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 px-6 py-3 bg-amber-50 text-amber-700 rounded-2xl border border-amber-100 text-xs font-bold uppercase tracking-wider text-left">
+          <div className="flex items-center gap-2 px-6 py-3 bg-amber-50 text-amber-700 rounded-md border border-amber-100 text-xs font-bold text-left">
             <AlertCircle size={14} /> {error}
           </div>
         )}
@@ -367,37 +348,34 @@ function SearchSection({ profile, onApply }: { profile: UserProfile | null, onAp
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
         {results.length > 0 ? results.map(j => (
-          <div key={j.id} className="gpt-card p-10 flex flex-col justify-between group hover:border-slate-400 transition-all text-left">
+          <div key={j.id} className="gpt-card p-6 flex flex-col justify-between group hover:border-slate-400 transition-all text-left">
             <div className="space-y-6 text-left">
               <div className="flex justify-between items-start text-left">
-                <div className="px-4 py-1.5 bg-[#0f172a] text-white text-[10px] font-black rounded-full shadow-lg shadow-slate-200 uppercase tracking-widest text-left">
-                  {Math.round(j.score * 100)}% Match
+                <div className="px-4 py-1.5 bg-[#0f172a] text-white text-xs font-semibold rounded-full shadow-lg shadow-slate-200 text-left">
+                  {Math.round(j.score * 100)}% match
                 </div>
-                <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">{j.source}</div>
+                <div className="text-xs font-semibold text-slate-400">{j.source}</div>
               </div>
               <div className="space-y-2 text-left">
-                <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-[1.1] uppercase text-left">{j.title}</h3>
-                <div className="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase tracking-widest text-left">
+                <h3 className="text-2xl font-semibold text-slate-900 leading-[1.1] text-left">{j.title}</h3>
+                <div className="flex items-center gap-2 text-sm font-bold text-slate-400 text-left">
                    {j.company} <div className="w-1 h-1 bg-slate-200 rounded-full" /> {j.location}
                 </div>
               </div>
               <p className="text-sm text-slate-500 line-clamp-4 leading-relaxed text-left font-medium">{j.description}</p>
             </div>
-            <div className="pt-10 flex gap-3 text-left">
-              <button onClick={() => setSelected(j)} className="btn-gpt-secondary flex-1 text-[10px] uppercase font-black tracking-widest h-12">Tailor</button>
+            <div className="pt-6 flex gap-3 text-left">
+              <button onClick={() => setSelected(j)} className="btn-gpt-secondary flex-1 text-xs font-semibold h-12">Tips</button>
               <button 
                 onClick={() => setApplyingJob(j)}
-                className="btn-gpt-apply flex-1 text-[10px] uppercase font-black tracking-widest h-12 bg-slate-900 border-slate-900 hover:bg-slate-800"
+                className="btn-gpt-apply flex-1 text-xs font-semibold h-12"
               >
                 Apply
               </button>
             </div>
           </div>
         )) : (
-          <div className="col-span-full h-[500px] flex flex-col items-center justify-center text-slate-200 grayscale opacity-20 text-center">
-            <Search size={120} strokeWidth={0.5} />
-            <p className="mt-8 font-black text-2xl uppercase tracking-[0.5em] text-center">Enter Search</p>
-          </div>
+          <p className="col-span-full py-16 text-slate-500 text-sm">{isSearching ? 'Fetching and ranking listings…' : profile ? 'Search for a role to see listings.' : 'Search for a role to see listings. Upload your resume on the Profile tab to rank them against it.'}</p>
         )}
       </div>
 
@@ -411,9 +389,9 @@ function HistorySection({ applications }: { applications: JobApplication[] }) {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-12 text-left">
        <div className="space-y-4 text-left">
-          <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 text-left">Application History</h2>
+          <h2 className="text-3xl font-bold text-slate-900 text-left">Applications</h2>
           <p className="text-xl text-slate-500 leading-relaxed text-left">
-            Track all the roles you've engaged with through the system.
+            Every listing you have opened through Apply, newest first. Stored in this browser.
           </p>
        </div>
 
@@ -422,12 +400,12 @@ function HistorySection({ applications }: { applications: JobApplication[] }) {
             <table className="w-full text-left border-collapse">
               <thead className="bg-slate-50/50">
                 <tr>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Job Title</th>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Company</th>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Date</th>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Source</th>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Action</th>
+                  <th className="px-8 py-6 text-xs font-semibold text-slate-400">Job Title</th>
+                  <th className="px-8 py-6 text-xs font-semibold text-slate-400">Company</th>
+                  <th className="px-8 py-6 text-xs font-semibold text-slate-400">Date</th>
+                  <th className="px-8 py-6 text-xs font-semibold text-slate-400">Status</th>
+                  <th className="px-8 py-6 text-xs font-semibold text-slate-400">Source</th>
+                  <th className="px-8 py-6 text-xs font-semibold text-slate-400">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -435,18 +413,18 @@ function HistorySection({ applications }: { applications: JobApplication[] }) {
                   <tr key={app.id} className="hover:bg-slate-50/30 transition-colors">
                     <td className="px-8 py-6">
                       <div className="font-bold text-slate-900 text-sm">{app.title}</div>
-                      <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{app.location}</div>
+                      <div className="text-xs text-slate-400 font-medium">{app.location}</div>
                     </td>
                     <td className="px-8 py-6 text-sm font-bold text-slate-600">{app.company}</td>
-                    <td className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase">
+                    <td className="px-8 py-6 text-xs font-bold text-slate-400">
                       {new Date(app.appliedAt).toLocaleDateString()}
                     </td>
                     <td className="px-8 py-6">
-                      <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black rounded-full uppercase tracking-widest border border-emerald-100">
+                      <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-xs font-semibold rounded-full border border-emerald-100">
                         {app.status}
                       </span>
                     </td>
-                    <td className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{app.source}</td>
+                    <td className="px-8 py-6 text-xs font-bold text-slate-400">{app.source}</td>
                     <td className="px-8 py-6">
                       <a href={app.url} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-900 transition-colors">
                         <ExternalLink size={16} />
@@ -455,7 +433,7 @@ function HistorySection({ applications }: { applications: JobApplication[] }) {
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan={6} className="px-8 py-20 text-center text-slate-300 italic text-sm">No applications recorded yet.</td>
+                    <td colSpan={6} className="px-8 py-20 text-center text-slate-400 text-sm">No applications recorded yet.</td>
                   </tr>
                 )}
               </tbody>
@@ -467,7 +445,7 @@ function HistorySection({ applications }: { applications: JobApplication[] }) {
 }
 
 function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserProfile | null, onApply: () => void, onClose: () => void }) {
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(4)
   const [isDone, setIsDone] = useState(false)
   const [isAutomating, setIsAutomating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -482,12 +460,14 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
     }
   }, [step])
 
+  useEffect(() => { const k = (e: KeyboardEvent) => e.key === 'Escape' && !isAutomating && onClose(); window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [onClose, isAutomating]);
+
   const steps = [
-    "Compiling Experience Matrix...",
-    "Optimizing Vector Profile...",
-    "Constructing Application Layer...",
-    "Securing Handshake Bridge...",
-    "Identity Verification Ready"
+    profile?.email ? `Uses ${[profile.firstName, profile.lastName].filter(Boolean).join(' ') || 'your name'} and ${profile.email} from Settings` : "Add your name and email in Settings first",
+    "Opens the listing in a headless browser",
+    "Fills in the name and email fields it can find",
+    "Saves the listing to Applications",
+    "Opens the page so you can check and submit"
   ]
 
   const handleFinalStep = async () => {
@@ -519,7 +499,7 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
       
       if (!res.ok) {
         const d = await res.json();
-        throw new Error(d.error || 'Bridge connection failed');
+        throw new Error(d.error || 'The form could not be filled in');
       }
 
       const data = await res.json();
@@ -533,40 +513,40 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
 
     } catch (err: any) {
       console.error('Automation error:', err);
-      setError(err.message || 'The automation bridge encountered a critical failure. Manual application required.');
+      setError(err.message || 'The form could not be filled in automatically. Open the listing and apply there.');
     } finally {
       setIsAutomating(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-500">
-       <div className="w-full max-w-4xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-300 text-left border border-slate-100">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60  animate-in fade-in duration-500">
+       <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-md shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-300 text-left border border-slate-100">
           
           {/* Left Side: Status & Controls */}
-          <div className="p-12 md:p-16 space-y-12 flex-1 border-r border-slate-50">
+          <div className="p-6 md:p-10 space-y-8 flex-1 border-r border-slate-50">
             <div className="flex justify-between items-start">
-              <div className="w-16 h-16 bg-[#0f172a] rounded-3xl flex items-center justify-center shadow-2xl shadow-slate-200">
-                 {error ? <AlertCircle className="w-8 h-8 text-rose-400" /> : isAutomating ? <Loader2 className="w-8 h-8 text-white animate-spin" /> : isDone ? <CheckCircle2 className="w-8 h-8 text-emerald-400" /> : <Zap className="w-8 h-8 text-white animate-pulse" />}
+              <div className="h-6">
+                 {isAutomating && <Loader2 className="w-6 h-6 animate-spin" />}
               </div>
-              <button onClick={onClose} className="p-2 -mr-2 text-slate-300 hover:text-slate-900 transition-colors" disabled={isAutomating}><X size={24} /></button>
+              <button onClick={onClose} className="p-2 -mr-2 text-slate-400 hover:text-slate-900 transition-colors" disabled={isAutomating}><X size={24} /></button>
             </div>
 
             <div className="space-y-2 text-left">
-              <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">
-                {error ? "Bridge Failure" : isAutomating ? "Bridge Active" : isDone ? "Protocol Ready" : "Initializing..."}
+              <h3 className="text-3xl font-semibold text-slate-900 leading-none">
+                {error ? "Could not fill the form" : isAutomating ? "Filling in the form…" : j.title}
               </h3>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{j.company}</p>
+              <p className="text-xs font-semibold text-slate-400">{j.company}</p>
             </div>
 
             {error ? (
-              <div className="p-8 bg-rose-50 border border-rose-100 rounded-3xl space-y-4">
-                <p className="text-xs font-bold text-rose-600 leading-relaxed uppercase tracking-widest">{error}</p>
+              <div className="p-8 bg-rose-50 border border-rose-100 rounded-md space-y-4">
+                <p className="text-xs font-bold text-rose-600 leading-relaxed">{error}</p>
                 <button 
                   onClick={() => window.open(j.url, '_blank')}
-                  className="text-[10px] font-black text-rose-400 hover:text-rose-900 underline transition-colors uppercase tracking-widest"
+                  className="text-xs font-semibold text-rose-400 hover:text-rose-900 underline transition-colors"
                 >
-                  Continue to Portal Manually
+                  Open the listing
                 </button>
               </div>
             ) : (
@@ -578,11 +558,11 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
                   )}>
                     <div className={cn(
                       "w-1 h-1 rounded-full",
-                      step > i ? "bg-emerald-500" : step === i ? "bg-slate-900" : "bg-slate-100"
+                      "bg-slate-400"
                     )} />
                     <span className={cn(
-                      "text-[10px] font-black uppercase tracking-[0.3em]",
-                      step === i ? "text-slate-900" : "text-slate-200"
+                      "text-xs font-semibold",
+                      "text-slate-700"
                     )}>{s}</span>
                   </div>
                 ))}
@@ -593,13 +573,13 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
               <div className="animate-in slide-in-from-bottom-4 duration-500 pt-4">
                 <button 
                   onClick={handleFinalStep}
-                  disabled={isAutomating}
-                  className="w-full h-20 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[2rem] flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.3em] shadow-xl shadow-emerald-200 transition-all active:scale-95 disabled:opacity-50"
+                  disabled={isAutomating || !profile?.email}
+                  className="w-full h-12 bg-[#b4532a] hover:bg-[#953f1d] text-white rounded-md flex items-center justify-center gap-3 text-sm font-semibold disabled:opacity-50"
                 >
-                  {isAutomating ? "Bridging..." : "Execute Protocol"} <ExternalLink size={18} />
+                  {isAutomating ? "Working…" : "Apply"} <ExternalLink size={18} />
                 </button>
-                <p className="mt-6 text-[10px] text-slate-400 font-bold text-center leading-relaxed">
-                  {isAutomating ? "Initializing headless viewport session..." : `Identity verified. Click execute to begin automated preparation.`}
+                <p className="mt-6 text-xs text-slate-400 font-bold text-center leading-relaxed">
+                  {isAutomating ? "This can take up to 30 seconds." : "Nothing is submitted for you. You review and send it on the job site."}
                 </p>
               </div>
             )}
@@ -608,13 +588,9 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
           {/* Right Side: Visual Render (Viewport) */}
           <div className="w-full md:w-[400px] bg-slate-50 p-8 flex flex-col border-l border-slate-100">
              <div className="flex items-center gap-2 mb-4 px-2">
-                <div className="flex gap-1.5">
-                   <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
-                   <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
-                   <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
-                </div>
+                
                 <div className="flex-1 h-6 bg-white rounded-md border border-slate-200 flex items-center px-3">
-                   <span className="text-[8px] text-slate-300 font-mono truncate">{j.url}</span>
+                   <span className="text-xs text-slate-400 truncate">{j.url}</span>
                 </div>
              </div>
              
@@ -626,27 +602,23 @@ function ApplyModal({ j, profile, onApply, onClose }: { j: any, profile: UserPro
                      {isAutomating ? (
                        <>
                          <div className="w-12 h-12 border-2 border-slate-100 border-t-slate-900 rounded-full animate-spin" />
-                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Opening the browser…</span>
+                         <span className="text-xs font-bold text-slate-400">Opening the browser…</span>
                        </>
                      ) : (
                        <>
-                         <Layers className="w-12 h-12 text-slate-100" />
-                         <span className="text-[10px] font-bold text-slate-200 uppercase tracking-widest">Awaiting Bridge Connection</span>
+                                                  <span className="text-xs font-bold text-slate-400">The filled-in page appears here</span>
                        </>
                      )}
                   </div>
                 )}
                 
-                {/* Simulated Scanning Overlay */}
-                {isAutomating && !screenshot && (
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/5 to-transparent h-[200%] -translate-y-full animate-[scan_2s_linear_infinite]" />
-                )}
+                
              </div>
              
              <div className="mt-4 px-2 flex justify-between items-center">
-                <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Browser preview</span>
+                <span className="text-xs font-semibold text-slate-400">Browser preview</span>
                 <div className="flex items-center gap-1">
-                   <span className="text-[8px] font-bold text-slate-300 uppercase">{isAutomating ? "Running" : "Idle"}</span>
+                   <span className="text-xs font-bold text-slate-400">{isAutomating ? "Running" : "Idle"}</span>
                 </div>
              </div>
           </div>
@@ -662,39 +634,35 @@ function Modal({ j, profile, onClose }: { j: any, profile: UserProfile | null, o
     return profile.skills.filter(s => lowerDesc.includes(s.toLowerCase())).slice(0, 3);
   }, [profile, j]);
 
-  const defaultSkills = profile?.skills.slice(0, 3) || ['experience', 'expertise', 'leadership'];
-  const displaySkills = matchingSkills.length > 0 ? matchingSkills : defaultSkills;
+  const displaySkills = matchingSkills;
+  const advice = displaySkills.map(s => `The listing mentions ${s}, and so does your resume. Put it near the top of your cover note.`);
+  useEffect(() => { const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose(); window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [onClose]);
+  const [copied, setCopied] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-       <div className="w-full max-w-2xl bg-white rounded-[3rem] shadow-2xl p-16 space-y-12 animate-in zoom-in-95 duration-200 text-left border border-slate-100">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40  animate-in fade-in duration-300">
+       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-md shadow-xl p-6 md:p-10 space-y-8 animate-in zoom-in-95 duration-200 text-left border border-slate-100">
           <div className="space-y-6 text-left">
-             <div className="w-16 h-16 bg-[#0f172a] rounded-3xl flex items-center justify-center shadow-xl shadow-slate-200">
-                <Activity className="w-8 h-8 text-white" />
-             </div>
-             <div className="space-y-2 text-left">
-               <h3 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none text-left italic">{j.title}</h3>
-               <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.3em] text-left">{j.company}</p>
+                          <div className="space-y-2 text-left">
+               <h3 className="text-4xl font-semibold text-slate-900 leading-none text-left">{j.title}</h3>
+               <p className="text-sm font-bold text-slate-400 text-left">{j.company}</p>
              </div>
           </div>
 
           <div className="space-y-8 text-left">
-             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] flex items-center gap-2 text-left font-mono">
-               Strategic Protocol
+             <h4 className="text-xs font-semibold text-slate-400 flex items-center gap-2 text-left">
+               What to lead with
              </h4>
              <div className="space-y-4 text-left">
-                {displaySkills.map((skill, i) => (
-                  <div key={i} className="flex gap-6 p-8 bg-slate-50 rounded-[2rem] border border-slate-100 transition-colors hover:bg-white hover:border-slate-200 text-left">
-                     <div className="text-xl font-black text-slate-200 italic text-left">0{i+1}</div>
-                     <p className="text-sm text-slate-600 leading-relaxed font-bold text-left">Emphasize your <span className="text-[#0f172a] underline decoration-slate-300 decoration-2 underline-offset-4">{skill}</span> to maximize vector match score.</p>
-                  </div>
-                ))}
+                {advice.length ? advice.map((a, i) => (
+                  <p key={i} className="text-sm text-slate-700 leading-relaxed border-t border-slate-100 pt-3">{a}</p>
+                )) : <p className="text-sm text-slate-500">{profile ? 'None of the skills found in your resume appear in this listing. Read it through for the requirements before applying.' : 'Upload your resume on the Profile tab to see which of your skills this listing asks for.'}</p>}
              </div>
           </div>
 
           <div className="flex gap-4 pt-4 text-left">
-             <button onClick={onClose} className="btn-gpt-secondary flex-1 h-16 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest">Discard</button>
-             <button className="btn-gpt-primary flex-1 h-16 rounded-[1.5rem] bg-slate-900 border-slate-900 text-[10px] font-black uppercase tracking-widest text-white">Copy Advice</button>
+             <button onClick={onClose} className="btn-gpt-secondary flex-1 h-11 rounded-md text-xs font-semibold">Close</button>
+             <button disabled={!advice.length} onClick={() => navigator.clipboard.writeText(advice.join('\n')).then(() => setCopied(true))} className="btn-gpt-primary flex-1 h-16 disabled:opacity-40">{copied ? 'Copied' : 'Copy tips'}</button>
           </div>
        </div>
     </div>
@@ -712,65 +680,65 @@ function ConfigSection({ profile, onProfileUpdate }: { profile: UserProfile | nu
     setIsSaving(true);
     try {
       await onProfileUpdate({ ...profile, firstName, lastName, email, updatedAt: Date.now() });
-      alert('Settings saved!');
+      
     } finally { setIsSaving(false); }
   }
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-3xl space-y-16 text-left">
        <div className="space-y-4 text-left">
-          <h2 className="text-5xl font-extrabold tracking-tight text-slate-900 text-left">Local Settings</h2>
+          <h2 className="text-3xl font-bold text-slate-900 text-left">Settings</h2>
           <p className="text-xl text-slate-500 leading-relaxed text-left">
-            Manage your local processing preferences and application identity.
+            The details Apply fills in for you, and where your data lives.
           </p>
        </div>
 
        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
-          <div className="gpt-card p-12 space-y-10 text-left">
-             <div className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2 text-left font-mono"><Layers className="w-5 h-5 text-slate-400" /> Processing Layer</div>
+          <div className="gpt-card p-6 space-y-6 text-left">
+             <div className="text-xs font-semibold text-slate-900 flex items-center gap-2 text-left">How it works</div>
              <div className="space-y-6 text-left">
                 <div className="flex justify-between items-center py-4 border-b border-slate-100 text-left">
-                   <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Engine</span>
-                   <span className="text-[10px] font-black px-3 py-1 bg-slate-100 text-slate-700 rounded-full border border-slate-200">Verified Local</span>
+                   <span className="text-xs text-slate-500">Matching</span>
+                   <span className="text-xs text-slate-800 text-right">MiniLM embeddings, run in your browser</span>
                 </div>
                 <div className="flex justify-between items-center py-4 border-b border-slate-100 text-left">
-                   <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Security</span>
-                   <span className="text-[10px] font-black text-[#0f172a] uppercase tracking-widest">Sandboxed</span>
+                   <span className="text-xs text-slate-500">Storage</span>
+                   <span className="text-xs text-slate-800 text-right">IndexedDB on this device. Name and email are sent only when you press Apply.</span>
                 </div>
              </div>
           </div>
 
-          <div className="gpt-card p-12 space-y-10 text-left font-mono">
-             <div className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2 text-left font-mono"><User className="w-5 h-5 text-slate-400" /> Identity Buffer</div>
+          <div className="gpt-card p-6 space-y-6 text-left">
+             <div className="text-xs font-semibold text-slate-900 flex items-center gap-2 text-left">Your details</div>
              <div className="space-y-6 text-left">
                 <div className="grid grid-cols-2 gap-4 text-left">
                   <div className="space-y-2 text-left">
-                     <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-left">First Name</label>
+                     <label className="text-xs font-semibold text-slate-400 text-left">First Name</label>
                      <input 
                       type="text" 
                       placeholder="First" 
-                      className="w-full h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-200"
+                      className="w-full h-12 px-6 rounded-md bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-400"
                       value={firstName}
                       onChange={e => setFirstName(e.target.value)}
                      />
                   </div>
                   <div className="space-y-2 text-left">
-                     <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-left">Last Name</label>
+                     <label className="text-xs font-semibold text-slate-400 text-left">Last Name</label>
                      <input 
                       type="text" 
                       placeholder="Last" 
-                      className="w-full h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-200"
+                      className="w-full h-12 px-6 rounded-md bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-400"
                       value={lastName}
                       onChange={e => setLastName(e.target.value)}
                      />
                   </div>
                 </div>
                 <div className="space-y-2 text-left">
-                   <label className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-left">Email Address</label>
+                   <label className="text-xs font-semibold text-slate-400 text-left">Email Address</label>
                    <input 
                     type="email" 
-                    placeholder="Required" 
-                    className="w-full h-12 px-6 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-200"
+                    placeholder="you@example.com" 
+                    className="w-full h-12 px-6 rounded-md bg-slate-50 border border-slate-200 text-sm font-bold focus:border-slate-900 outline-none transition-all placeholder:text-slate-400"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                    />
@@ -780,15 +748,15 @@ function ConfigSection({ profile, onProfileUpdate }: { profile: UserProfile | nu
                   <button 
                     onClick={handleSave}
                     disabled={isSaving || !profile}
-                    className="w-full h-12 text-[10px] font-black text-white bg-slate-900 hover:bg-slate-800 transition-colors rounded-2xl uppercase tracking-[0.3em] disabled:opacity-50"
+                    className="w-full h-12 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-colors rounded-md disabled:opacity-50"
                   >
-                    {isSaving ? "Saving..." : "Save Identity"}
+                    {isSaving ? "Saving..." : "Save"}
                   </button>
                   <button 
-                    onClick={() => confirm('Reset all local data?') && (indexedDB.deleteDatabase('auto-apply-db'), window.location.reload())}
-                    className="w-full h-12 text-[10px] font-black text-rose-500 border border-rose-100 hover:bg-rose-50 transition-colors rounded-2xl uppercase tracking-[0.3em]"
+                    onClick={() => confirm('Delete your resume, details and application history from this browser?') && (indexedDB.deleteDatabase('auto-apply-db'), window.location.reload())}
+                    className="w-full h-12 text-xs font-semibold text-rose-500 border border-rose-100 hover:bg-rose-50 transition-colors rounded-md"
                   >
-                    Reset Profile Data
+                    Delete all local data
                   </button>
                 </div>
              </div>
