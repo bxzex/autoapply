@@ -76,16 +76,6 @@ function App() {
             </button>
           </div>
 
-          <div className="hidden sm:flex items-center gap-3">
-            <a 
-              href="https://buy.stripe.com/9B6eVfd9E6OC3sr7cEaAw03" 
-              target="_blank" 
-              rel="noreferrer"
-              className="text-sm text-slate-500 hover:text-slate-900 underline underline-offset-4"
-            >
-              Support the project
-            </a>
-          </div>
         </div>
       </header>
 
